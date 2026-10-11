@@ -1,0 +1,754 @@
+<title>Red Letter Gospels</title>
+<meta name="description" content="Study the words of Jesus in the King James Gospels.">
+<meta name="theme-color" content="#1B2A4A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a printed red-letter Bible reimagined as an app. Left rail (desktop) or bottom tabs (phone); one centred reading column. */
+:root{
+  --paper:#F3F4F7; --page:#FFFFFF; --ink:#18202E; --muted:#5C6577; --line:#DCE0E8;
+  --red:#A8201A; --lapis:#24427F; --gold:#9A7316; --soft:#E9EDF5;
+  --hl-gold:#F7E3A1; --hl-rose:#F6CFD0; --hl-sky:#CFE0F7; --hl-sage:#D4EBD3;
+  --shadow:0 1px 2px rgba(24,32,46,.06),0 8px 24px rgba(24,32,46,.06);
+  --f-display:"IM Fell English","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --f-text:"Literata","Iowan Old Style",Georgia,"Times New Roman",serif;
+  --f-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --fs:1.14rem; --rail:240px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E121A; --page:#151B26; --ink:#E4E7EE; --muted:#9AA3B4; --line:#283143;
+  --red:#F0857A; --lapis:#9DB4F2; --gold:#D8B45C; --soft:#1C2433;
+  --hl-gold:#5A4A17; --hl-rose:#5B2A2E; --hl-sky:#1F3A5E; --hl-sage:#25432A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E121A; --page:#151B26; --ink:#E4E7EE; --muted:#9AA3B4; --line:#283143;
+  --red:#F0857A; --lapis:#9DB4F2; --gold:#D8B45C; --soft:#1C2433;
+  --hl-gold:#5A4A17; --hl-rose:#5B2A2E; --hl-sky:#1F3A5E; --hl-sage:#25432A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-ui);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--lapis);outline-offset:2px;border-radius:4px}
+a{color:var(--lapis)}
+h1,h2,h3{text-wrap:balance;margin:0}
+.wj{color:var(--red)}
+.nored .wj{color:inherit}
+.sc{font-variant:small-caps;letter-spacing:.04em}
+i.add{font-style:italic;opacity:.85}
+.gl{text-decoration:underline dotted color-mix(in srgb,var(--muted) 70%,transparent);text-underline-offset:3px;cursor:help}
+.nogloss .gl{text-decoration:none;cursor:inherit}
+
+/* ---------- Shell ---------- */
+.app{display:grid;grid-template-columns:var(--rail) minmax(0,1fr);min-height:100vh;align-content:start}
+.rail{position:sticky;top:0;height:100vh;padding:28px 18px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:22px;background:var(--page)}
+.brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--ink)}
+.brand-mark{width:34px;height:34px;flex:none}
+.brand b{font-family:var(--f-display);font-weight:400;font-size:1.45rem;line-height:1;display:block}
+.brand small{font-size:.64rem;letter-spacing:.1em;white-space:nowrap;text-transform:uppercase;color:var(--muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:9px 10px;border-radius:8px;text-align:left;color:var(--muted);font-weight:500}
+.nav button svg{width:19px;height:19px;flex:none}
+.nav button:hover{background:var(--soft);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--soft);color:var(--ink)}
+.nav button[aria-current="page"] svg{color:var(--red)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;font-size:.78rem;color:var(--muted)}
+.meter{height:5px;background:var(--soft);border-radius:9px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--red);border-radius:9px;transition:width .4s}
+.sync{display:flex;gap:6px;align-items:center}
+.sync::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync.on::before{background:#3F9D5A}
+.main{min-width:0;padding-inline:clamp(16px,4vw,48px);padding-block:32px 96px}
+.wrap{max-width:46rem;margin:0 auto}
+.wide{max-width:64rem;margin:0 auto}
+.topbar{display:none}
+.tabs{display:none}
+
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .topbar{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;align-items:center;justify-content:space-between;padding:10px 16px;background:color-mix(in srgb,var(--page) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar .brand b{font-size:1.2rem}
+  .topbar .brand-mark{width:26px;height:26px}
+  .icon-btn{border:0;background:none;padding:6px;border-radius:8px;color:var(--muted);display:inline-flex}
+  .icon-btn svg{width:22px;height:22px}
+  .tabs{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--page);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.66rem;color:var(--muted);padding:4px 0;font-weight:500}
+  .tabs button svg{width:21px;height:21px}
+  .tabs button[aria-current="page"]{color:var(--red)}
+  .main{padding-block:20px 110px}
+}
+
+/* ---------- Common ---------- */
+.eyebrow{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.display{font-family:var(--f-display);font-weight:400;font-size:clamp(2rem,5vw,2.9rem);line-height:1.05}
+.h2{font-family:var(--f-display);font-weight:400;font-size:1.7rem;line-height:1.15}
+.lede{font-family:var(--f-text);font-size:1.05rem;color:var(--muted);max-width:38rem}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--page);padding:8px 14px;border-radius:999px;font-weight:500;font-size:.88rem;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--lapis);border-color:var(--lapis);color:var(--page)}
+.btn.red{background:var(--red);border-color:var(--red);color:var(--page)}
+.btn svg{width:16px;height:16px}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--page);border-radius:999px;padding:3px 10px;font-size:.8rem;color:var(--lapis);font-weight:500}
+button.chip:hover{border-color:var(--lapis)}
+.card{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.rule{height:1px;background:var(--line);border:0;margin:8px 0}
+.ornament{display:flex;align-items:center;gap:12px;color:var(--gold);justify-content:center;margin:28px 0}
+.ornament::before,.ornament::after{content:"";height:1px;flex:1;max-width:120px;background:var(--line)}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.scripture{font-family:var(--f-text);font-size:var(--fs);line-height:1.75}
+.scripture sup{font-family:var(--f-ui);font-size:.62em;color:var(--gold);font-weight:600;margin-right:.25em;vertical-align:.45em}
+.ref{font-family:var(--f-ui);font-weight:600;font-size:.8rem;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+blockquote.passage{margin:0;padding:14px 0 14px 18px;border-left:2px solid var(--gold)}
+blockquote.passage p{margin:0 0 .4em}
+
+/* ---------- Today ---------- */
+.hero{padding:6px 0 10px;display:flex;flex-direction:column;gap:14px}
+.votd{position:relative;background:var(--page);border:1px solid var(--line);border-radius:18px;padding:clamp(22px,4vw,40px);box-shadow:var(--shadow);overflow:hidden}
+.votd::before{content:"\201C";position:absolute;right:18px;top:-24px;font-family:var(--f-display);font-size:10rem;color:var(--soft);line-height:1;pointer-events:none}
+.votd .scripture{font-size:clamp(1.25rem,2.6vw,1.6rem);line-height:1.55;position:relative}
+.votd footer{margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
+.today-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));margin-top:16px}
+.ring{width:84px;height:84px;flex:none}
+.ring circle{fill:none;stroke-width:7}
+.ring .bg{stroke:var(--soft)}
+.ring .fg{stroke:var(--red);stroke-linecap:round;transition:stroke-dashoffset .6s}
+.ring text{fill:var(--ink);font:600 16px var(--f-ui)}
+.books4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.books4 button{border:1px solid var(--line);background:var(--page);border-radius:12px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.books4 button:hover{border-color:var(--red)}
+.books4 b{font-family:var(--f-display);font-weight:400;font-size:1.15rem}
+.books4 span{font-size:.68rem;color:var(--muted);text-align:center}
+@media (max-width:420px){.books4{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- Reader ---------- */
+.reader-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:22px}
+.picker{display:flex;gap:8px;flex-wrap:wrap}
+.sel{border:1px solid var(--line);background:var(--page);border-radius:999px;padding:7px 12px;font-weight:600;font-size:.9rem}
+.chap-head{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.chap-head .eyebrow{font-family:var(--f-display);text-transform:none;letter-spacing:.02em;font-size:1.02rem;font-weight:400;font-style:italic;color:var(--muted)}
+.chap-title{font-family:var(--f-display);font-weight:400;font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.12}
+.text{font-family:var(--f-text);font-size:var(--fs);line-height:1.85}
+.text p{margin:0 0 .9em;text-indent:0}
+.text .dropnum{float:left;font-family:var(--f-text);font-weight:400;font-size:3.9em;line-height:.9;margin:.04em .16em 0 0;color:var(--red)}
+.nf{font-family:var(--f-text);font-size:.88em;letter-spacing:0}
+.v{border-radius:4px;transition:background .2s;cursor:pointer;-webkit-tap-highlight-color:transparent;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.v sup{font-family:var(--f-ui);font-size:.6em;color:var(--gold);font-weight:600;margin:0 .2em 0 .1em;vertical-align:.5em;user-select:none}
+.nonum .v sup{display:none}
+.v.sel-v{outline:2px dashed var(--lapis);outline-offset:1px}
+.v.flash{background:color-mix(in srgb,var(--gold) 22%,transparent)}
+.v[data-hl="gold"]{background:var(--hl-gold)}
+.v[data-hl="rose"]{background:var(--hl-rose)}
+.v[data-hl="sky"]{background:var(--hl-sky)}
+.v[data-hl="sage"]{background:var(--hl-sage)}
+.v .notemark{display:inline-block;width:.55em;height:.55em;background:var(--lapis);border-radius:50%;margin-left:.2em;vertical-align:.25em}
+.verses .v{display:block;padding:2px 0;margin-bottom:.15em}
+.verses p{margin:0}
+.verses .dropnum{display:none}
+.chap-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}
+.chap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px}
+.chap-grid button{border:1px solid var(--line);background:var(--page);border-radius:8px;padding:8px 0;font-weight:600;font-variant-numeric:tabular-nums}
+.chap-grid button.done{background:var(--soft);color:var(--red)}
+.chap-grid button.cur{border-color:var(--red)}
+.intro-card{margin-bottom:26px}
+.intro-card dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0 0;font-size:.9rem}
+.intro-card dt{color:var(--muted);font-weight:600;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;padding-top:2px}
+.intro-card dd{margin:0}
+details.intro-card>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.intro-card>summary::-webkit-details-marker{display:none}
+details.intro-card>summary::after{content:"+";font-size:1.2rem;color:var(--muted)}
+details[open].intro-card>summary::after{content:"−"}
+
+/* ---------- Sheet / modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,14,22,.42);z-index:50}
+.sheet{position:fixed;z-index:60;left:50%;bottom:0;transform:translateX(-50%);width:min(560px,100%);background:var(--page);border:1px solid var(--line);border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px rgba(0,0,0,.18);max-height:85vh;overflow:auto}
+.modal{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-50%);width:min(680px,calc(100% - 24px));max-height:min(86vh,900px);overflow:auto;background:var(--page);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.swatches{display:flex;gap:10px}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--line)}
+.swatch[aria-pressed="true"]{border-color:var(--ink)}
+textarea{width:100%;min-height:96px;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:10px 12px;font-family:var(--f-text);font-size:1rem;line-height:1.5;resize:vertical}
+input[type="search"],input[type="text"]{width:100%;border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px 14px;font-size:1rem}
+.toggle{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.toggle:last-child{border-bottom:0}
+.switch{appearance:none;width:42px;height:24px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background .2s;cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--page);transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch:checked{background:var(--red)}
+.switch:checked::after{left:21px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.seg button{border:0;background:none;padding:5px 12px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--soft);color:var(--red)}
+.pop{position:fixed;z-index:70;max-width:300px;background:var(--ink);color:var(--page);padding:10px 12px;border-radius:10px;font-size:.84rem;line-height:1.45;box-shadow:var(--shadow)}
+.pop b{display:block;font-family:var(--f-display);font-weight:400;font-size:1.05rem;margin-bottom:2px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:80;background:var(--ink);color:var(--page);padding:8px 16px;border-radius:99px;font-size:.86rem;font-weight:500}
+
+/* ---------- Studies ---------- */
+.study-card{display:flex;flex-direction:column;gap:8px;text-align:left;border:1px solid var(--line);background:var(--page);border-radius:14px;padding:18px;color:var(--ink);box-shadow:var(--shadow);transition:transform .15s,border-color .15s}
+.study-card:hover{border-color:var(--red);transform:translateY(-2px)}
+.study-card h3{font-family:var(--f-display);font-weight:400;font-size:1.35rem;line-height:1.15}
+.study-card .meta{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-top:auto;padding-top:6px}
+.study-card .done{color:var(--red);font-weight:600}
+.study-part{display:grid;grid-template-columns:2.2rem minmax(0,1fr);gap:4px 14px;padding:20px 0;border-top:1px solid var(--line)}
+.study-part .n{font-family:var(--f-text);font-size:1.3rem;color:var(--gold);line-height:1.2}
+.study-part h3{font-family:var(--f-display);font-weight:400;font-size:1.3rem;line-height:1.2}
+.study-part .note{font-size:.93rem;color:var(--muted);margin:8px 0 0}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;margin-top:8px}
+.pair .ot{border-left-color:var(--muted)}
+.memory{background:var(--soft);border-radius:14px;padding:18px 20px;margin:20px 0}
+.qs{display:flex;flex-direction:column;gap:18px;counter-reset:q}
+.qs label{display:block;font-family:var(--f-text);font-size:1.02rem;margin-bottom:8px}
+.qs label::before{counter-increment:q;content:counter(q) ". ";color:var(--red);font-family:var(--f-display)}
+.tabsline{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:18px 0 22px;overflow-x:auto}
+.tabsline button{border:0;background:none;padding:10px 12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tabsline button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}
+
+/* Harmony */
+.harm-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--page)}
+table.harm{border-collapse:collapse;width:100%;min-width:640px;font-size:.86rem}
+.harm th,.harm td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+.harm thead th{font-family:var(--f-display);font-weight:400;font-size:1.05rem;position:sticky;top:0;background:var(--page)}
+.harm tbody th{font-weight:500;font-family:var(--f-text)}
+.harm tr:last-child td,.harm tr:last-child th{border-bottom:0}
+.harm .none{color:var(--line)}
+.harm .num{color:var(--muted);font-variant-numeric:tabular-nums;width:2rem}
+
+/* Plans */
+.plan-days{display:grid;grid-template-columns:repeat(auto-fill,minmax(26px,1fr));gap:4px;margin:14px 0}
+.plan-days span{aspect-ratio:1;border-radius:5px;background:var(--soft);max-width:100%}
+.plan-days span.on{background:var(--red)}
+.plan-days span.next{outline:2px solid var(--gold)}
+.day-list{display:flex;flex-direction:column}
+.day{display:grid;grid-template-columns:auto 3.6rem minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.day input{width:20px;height:20px;accent-color:var(--red)}
+.day .dn{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.8rem;font-weight:600}
+.day .dt{min-width:0}
+.day .dt b{font-weight:600}
+.day .dt small{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day.done .dt b{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--red)}
+
+/* Search */
+.result{padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.result:hover .ref{color:var(--red)}
+.result .scripture{font-size:1rem;line-height:1.6}
+mark{background:var(--hl-gold);color:inherit;border-radius:3px;padding:0 1px}
+.counts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+
+/* Journal */
+.jitem{padding:16px 0;border-bottom:1px solid var(--line)}
+.jitem .scripture{font-size:1rem;line-height:1.6}
+.jnote{font-family:var(--f-text);background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:8px;white-space:pre-wrap}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:26px;text-align:center;color:var(--muted)}
+
+/* Guide */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:4px 26px}
+.gloss div{padding:10px 0;border-bottom:1px solid var(--line)}
+.gloss b{font-family:var(--f-display);font-weight:400;font-size:1.15rem;display:block}
+
+/* Booklet */
+.booklet .cover{padding:40px 0 20px}
+.booklet .bk{padding:14px 0;border-bottom:1px solid var(--line)}
+.booklet .bq{margin-top:12px;font-family:var(--f-text)}
+.booklet .bq p{margin:0 0 4px}
+.lines i{display:block;height:1.9em;border-bottom:1px solid var(--line)}
+.check89{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:0 24px;margin-top:12px;font-size:.86rem}
+.check89>div{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--line)}
+.check89 .box{width:12px;height:12px;border:1.5px solid var(--muted);border-radius:2px;flex:none;transform:translateY(1px)}
+.check89 .dn{width:1.6rem;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.booklet section.pb{margin-top:40px}
+@media print{.booklet section.pb{break-before:page;margin-top:0}.booklet .harm-wrap{border:0}.booklet table.harm{min-width:0}.booklet .harm thead th{position:static}}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- Print ---------- */
+@media print{
+  :root{--paper:#fff;--page:#fff;--ink:#111;--muted:#444;--line:#ccc;--red:#9E1B16;--gold:#7A5A0F;--soft:#f1f1f1}
+  html,body{background:#fff}
+  .rail,.topbar,.tabs,.reader-bar,.chap-foot,.btn,.no-print,.sheet,.scrim,.toast,.pop{display:none!important}
+  .app{display:block}
+  .main{padding:0}
+  .card,.votd,.study-card{box-shadow:none}
+  .v[data-hl]{background:none!important}
+  .gl{text-decoration:none}
+  .study-part{break-inside:auto;padding:12px 0}
+  .study-part h3{break-after:avoid}
+  .scripture,.booklet .scripture{font-size:11pt!important;line-height:1.55}
+  .booklet .bq{break-inside:avoid}
+  .memory{break-inside:avoid}
+  textarea{border:0;border-bottom:1px solid #999;border-radius:0;min-height:5em;background:none}
+}
+</style>
+
+<div class="app" id="app">
+  <aside class="rail" aria-label="Main">
+    <a class="brand" href="#today" data-go="today">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="5" width="34" height="30" rx="3" fill="var(--lapis)"/><rect x="18.5" y="9" width="3" height="20" fill="var(--page)"/><rect x="13" y="14" width="14" height="3" fill="var(--page)"/><path d="M3 33h34v2a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="var(--red)"/></svg>
+      <span><b>Red Letter</b><small>The Four Gospels · KJV</small></span>
+    </a>
+    <nav class="nav" id="nav"></nav>
+    <div class="rail-foot">
+      <div><div class="row" style="justify-content:space-between"><span>Gospels read</span><b id="railPct">0 of 89</b></div><div class="meter" style="margin-top:6px"><i id="railMeter" style="width:0"></i></div></div>
+      <span class="sync" id="sync">Saved on this device</span>
+    </div>
+  </aside>
+  <header class="topbar">
+    <a class="brand" href="#today" data-go="today">
+      <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="5" width="34" height="30" rx="3" fill="var(--lapis)"/><rect x="18.5" y="9" width="3" height="20" fill="var(--page)"/><rect x="13" y="14" width="14" height="3" fill="var(--page)"/><path d="M3 33h34v2a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="var(--red)"/></svg>
+      <span><b>Red Letter</b></span>
+    </a>
+    <button class="icon-btn" data-go="guide" aria-label="Guide and word help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg></button>
+  </header>
+  <main class="main" id="main" tabindex="-1"></main>
+  <nav class="tabs" id="tabs" aria-label="Main"></nav>
+</div>
+<div id="layer"></div>
+
+<script>
+/*__DATA__*/
+</script>
+<script>
+/*__CONTENT__*/
+</script>
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const BOOK=Object.fromEntries(BOOKS.map(b=>[b.id,b]));
+const ABBR={Matt:"Matt",Matthew:"Matt",Mt:"Matt",Mark:"Mark",Mk:"Mark",Luke:"Luke",Lk:"Luke",John:"John",Jn:"John"};
+const OTNAME={Exod:"Exodus",Isa:"Isaiah",Mic:"Micah",Hos:"Hosea",Zech:"Zechariah",Ps:"Psalm",Deut:"Deuteronomy",Lev:"Leviticus"};
+const TOTAL=89;
+
+/* ---------- State & sync ---------- */
+const KEY="redletter.v1";
+const blank=()=>({v:1,updated:0,read:{},hl:{},notes:{},plans:{},answers:{},studies:{},last:{b:"Matt",c:1},plan:"gospels89",settings:{red:true,nums:true,mode:"para",size:1.14,gloss:true,theme:""}});
+let S=blank();
+try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(blank(),JSON.parse(raw));}catch(e){}
+S.settings=Object.assign(blank().settings,S.settings||{});
+let viewerName="", remote=null, saveTimer=null, writing=Promise.resolve();
+function save(){
+  S.updated=Date.now();
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+  if(remote){clearTimeout(saveTimer); saveTimer=setTimeout(pushRemote,1200);}
+  railProgress();
+}
+function pushRemote(){
+  const snap=JSON.parse(JSON.stringify(S));
+  writing=writing.then(()=>remote.set({json:JSON.stringify(snap),updated:snap.updated})).catch(e=>{ if(e&&e.code==="unavailable") setTimeout(pushRemote,2500+Math.random()*1500); else setSync(false,"Saved on this device"); });
+}
+function setSync(on,label){const el=$("#sync"); el.classList.toggle("on",on); el.textContent=label;}
+async function connect(){
+  const C=window.claude; if(!C||!C.use) return;
+  try{
+    const [db,user]=await Promise.all([C.use("db"),C.use("user")]);
+    if(!db||!user) return;
+    try{ const me=await user.me(); const n=((me&&me.name)||"").trim().split(/\s+/)[0]; if(n){ viewerName=n; if(view==="today") render(); } }catch(e){}
+    const id=await user.id(); if(!id) return;
+    const ref=db.doc("data/users/"+id+"/journal");
+    const snap=await ref.get();
+    const apply=data=>{ try{ const r=JSON.parse(data.json); if(r&&r.updated>S.updated){ S=Object.assign(blank(),r); S.settings=Object.assign(blank().settings,S.settings||{}); try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){} applySettings(); render(); } }catch(e){} };
+    remote=ref;
+    if(snap.exists){ const d=snap.data(); if(d.updated>S.updated) apply(d); else if(S.updated>d.updated) pushRemote(); }
+    else if(S.updated) pushRemote();
+    setSync(true,"Synced to your account");
+    ref.onSnapshot(s=>{ if(s.exists && !s.metadata.hasPendingWrites) apply(s.data()); }, ()=>{});
+  }catch(e){ remote=null; }
+}
+
+/* ---------- Text helpers ---------- */
+const GLOSS_RE=new RegExp("\\b("+GLOSS.map(g=>g[0]).join("|")+")\\b","gi");
+function glossFor(word){const w=word.toLowerCase(); for(const g of GLOSS){ if(new RegExp("^(?:"+g[0]+")$","i").test(w)) return g; } return null;}
+function fmt(raw,{gloss=true}={}){
+  let s=esc(raw.replace(/^¶\s*/,""));
+  s=s.replace(/\bLORD(['’]S)?\b/g,(m)=>"\u0004"+m.toLowerCase()+"\u0005");
+  s=s.replace(/\bGOD\b/g,"\u0004god\u0005");
+  if(gloss&&S.settings.gloss) s=s.replace(GLOSS_RE,m=>"\u0001"+m+"\u0002");
+  s=s.replace(/\{/g,'<span class="wj">').replace(/\}/g,"</span>").replace(/\[\s*/g,'<i class="add">').replace(/\s*\]/g,"</i> ").replace(/<\/i> ([,.;:?!’'”)])/g,"</i>$1");
+  s=s.replace(/\u0001([^\u0002]+)\u0002/g,'<span class="gl" data-gl="$1">$1</span>');
+  s=s.replace(/\u0004([^\u0005]+)\u0005/g,'<span class="sc">$1</span>');
+  return s;
+}
+const plain=raw=>raw.replace(/^¶\s*/,"").replace(/[{}\[\]]/g,"").replace(/\s+/g," ").trim();
+function parseRef(ref){
+  const m=ref.trim().match(/^(\w+)\s+(\d+)(?::(\d+)(?:-(\d+)(?::(\d+))?)?)?$/);
+  if(!m) return null;
+  const b=ABBR[m[1]]||m[1], c1=+m[2];
+  let v1=m[3]?+m[3]:1, c2=c1, v2;
+  if(!m[3]) v2=null; else if(m[5]){c2=+m[4]; v2=+m[5];} else v2=m[4]?+m[4]:v1;
+  return {b,c1,v1,c2,v2,ot:!G[b]};
+}
+function versesOf(ref){
+  const r=typeof ref==="string"?parseRef(ref):ref; if(!r) return [];
+  const out=[];
+  if(r.ot){ for(let v=r.v1;v<=r.v2;v++){ const t=OT[r.b+"."+r.c1+"."+v]; if(t) out.push({b:r.b,c:r.c1,v,t}); } return out; }
+  for(let c=r.c1;c<=r.c2;c++){ const ch=G[r.b][c-1]; if(!ch) break;
+    const s=c===r.c1?r.v1:1, e=(c===r.c2&&r.v2)?r.v2:ch.length;
+    for(let v=s;v<=e;v++) if(ch[v-1]!=null) out.push({b:r.b,c,v,t:ch[v-1]}); }
+  return out;
+}
+function refLabel(ref){
+  const r=parseRef(ref); if(!r) return ref;
+  const name=r.ot?(OTNAME[r.b]||r.b):BOOK[r.b].name;
+  if(r.v2===null) return name+" "+r.c1;
+  if(r.c2!==r.c1) return name+" "+r.c1+":"+r.v1+"–"+r.c2+":"+r.v2;
+  return name+" "+r.c1+":"+r.v1+(r.v2!==r.v1?"–"+r.v2:"");
+}
+function passageHTML(ref,{nums=true}={}){
+  const vs=versesOf(ref);
+  return vs.map(x=>(nums&&vs.length>1?"<sup>"+x.v+"</sup>":"")+fmt(x.t)).join(" ");
+}
+
+/* ---------- Icons ---------- */
+const IC={
+  today:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/>',
+  read:'<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z"/><path d="M12 6.5v13"/>',
+  studies:'<path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>',
+  plans:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8.5 14.5l2 2 4-4"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  journal:'<path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v15l-3-2-3 2-3-2-3 2V5A1.5 1.5 0 0 1 6 3.5z"/><path d="M9 8h6M9 12h4"/>',
+  guide:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
+  prev:'<path d="M15 5l-7 7 7 7"/>', next:'<path d="M9 5l7 7-7 7"/>', gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>', copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>'
+};
+const ico=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>';
+const VIEWS=[["today","Today"],["read","Read"],["studies","Studies"],["plans","Plans"],["search","Search"],["journal","Journal"],["guide","Guide"]];
+
+/* ---------- Router ---------- */
+let view="today", sub={};
+function go(v,opts={}){
+  view=v; sub=opts; closeLayer();
+  if(location.hash.slice(1)!==v){ try{history.replaceState(null,"","#"+v);}catch(e){ location.hash=v; } }
+  render(); window.scrollTo(0,0);
+}
+const ROUTES=VIEWS.map(x=>x[0]).concat("booklet");
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1); if(h&&h!==view&&ROUTES.includes(h)){view=h;sub={};render();}});
+function navHTML(list){return list.map(([k,l])=>'<button data-go="'+k+'"'+(k===view?' aria-current="page"':'')+'>'+ico(k)+'<span>'+l+'</span></button>').join("");}
+function render(){
+  $("#nav").innerHTML=navHTML(VIEWS);
+  $("#tabs").innerHTML=navHTML(VIEWS.slice(0,6));
+  const m=$("#main");
+  ({today:vToday,read:vRead,studies:vStudies,plans:vPlans,search:vSearch,journal:vJournal,guide:vGuide,booklet:vBooklet}[view]||vToday)(m);
+  railProgress();
+}
+function railProgress(){const n=Object.keys(S.read).length; $("#railPct").textContent=n+" of "+TOTAL; $("#railMeter").style.width=(n/TOTAL*100)+"%";}
+
+/* ---------- Today ---------- */
+function dayOfYear(d=new Date()){return Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);}
+function nextPlanDay(p){const list=p.build(), done=S.plans[p.id]||{}; for(let i=0;i<list.length;i++) if(!done[i]) return {i,ref:list[i]}; return null;}
+function vToday(m){
+  const d=new Date(), ref=VOTD[dayOfYear(d)%VOTD.length];
+  const hr=d.getHours(), greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening";
+  const n=Object.keys(S.read).length, C=2*Math.PI*36;
+  const plan=PLANS.find(p=>p.id===S.plan)||PLANS[0], nx=nextPlanDay(plan);
+  const lastB=BOOK[S.last.b]||BOOK.Matt;
+  const st=STUDIES[dayOfYear(d)%STUDIES.length];
+  m.innerHTML='<div class="wrap">'+
+  '<section class="hero"><span class="eyebrow">'+d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"})+'</span>'+
+  '<h1 class="display">'+greet+(viewerName?', '+esc(viewerName):'')+'.</h1>'+
+  '<p class="lede">The red letters are the words of Jesus. Read them slowly, mark what speaks to you, and write down what you hear.</p></section>'+
+  '<article class="votd" style="margin-top:18px"><span class="eyebrow" style="position:relative">Today\'s words of Jesus</span>'+
+  '<div class="scripture" style="margin-top:10px">'+passageHTML(ref,{nums:false})+'</div>'+
+  '<footer><span class="ref">'+refLabel(ref)+'</span><span class="row"><button class="btn" data-copy="'+esc(ref)+'">'+ico("copy")+'Copy</button><button class="btn primary" data-open="'+esc(ref)+'">Read in context</button></span></footer></article>'+
+  '<div class="today-grid">'+
+   '<section class="card stack"><span class="eyebrow">Continue reading</span><div><div class="h2">'+lastB.name+' '+nf(S.last.c)+'</div><div class="muted">'+esc(lastB.titles[S.last.c-1])+'</div></div><div><button class="btn red" data-read="'+lastB.id+' '+S.last.c+'">Open '+lastB.name+' '+S.last.c+'</button></div></section>'+
+   '<section class="card"><div class="row" style="gap:16px;flex-wrap:nowrap"><svg class="ring" viewBox="0 0 84 84"><circle class="bg" cx="42" cy="42" r="36"/><circle class="fg" cx="42" cy="42" r="36" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-n/TOTAL))+'" transform="rotate(-90 42 42)"/><text x="42" y="47" text-anchor="middle">'+Math.round(n/TOTAL*100)+'%</text></svg>'+
+   '<div><span class="eyebrow">'+esc(plan.name)+'</span>'+(nx?'<div class="h2" style="font-size:1.35rem">Day '+nf(nx.i+1)+': '+nf(refLabel(nx.ref))+'</div><div class="row" style="margin-top:8px"><button class="btn" data-plan-open="'+nx.i+'">Read today\'s portion</button></div>':'<div class="h2" style="font-size:1.35rem">Plan complete. Well done!</div>')+'</div></div>'+
+   '<p class="small muted" style="margin:12px 0 0">'+n+' of 89 Gospel chapters read.</p></section>'+
+  '</div>'+
+  '<div class="ornament">✠</div>'+
+  '<section class="stack"><span class="eyebrow">Study for today</span>'+
+  '<button class="study-card" data-study="'+st.id+'"><span class="eyebrow">'+esc(st.sub)+'</span><h3>'+esc(st.title)+'</h3><p class="muted small" style="margin:0">'+esc(st.intro.slice(0,170))+'…</p><span class="meta"><span>'+st.parts.length+' passages · '+st.q.length+' questions</span>'+(S.studies[st.id]?'<span class="done">Completed</span>':'<span>Begin →</span>')+'</span></button></section>'+
+  '<div class="ornament">✠</div>'+
+  '<section><span class="eyebrow">The Four Gospels</span><div class="books4">'+BOOKS.map(b=>'<button data-read="'+b.id+' 1"><b>'+b.name+'</b><span>'+esc(b.portrait)+'</span></button>').join("")+'</div></section>'+
+  '</div>';
+}
+
+/* ---------- Reader ---------- */
+let selected=new Set();
+function vRead(m){
+  const b=BOOK[sub.b||S.last.b]||BOOK.Matt, c=Math.min(sub.c||S.last.c||1,G[b.id].length);
+  S.last={b:b.id,c}; try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+  selected.clear();
+  const ch=G[b.id][c-1], key=b.id+"."+c, set=S.settings;
+  let html="", open=false;
+  ch.forEach((t,i)=>{
+    const v=i+1, vk=key+"."+v, para=t.startsWith("¶")||i===0;
+    if(para){ if(open) html+="</p>"; html+="<p>"; open=true; }
+    if(i===0) html+='<span class="dropnum" aria-hidden="true">'+c+'</span>';
+    html+='<span class="v" data-v="'+v+'"'+(S.hl[vk]?' data-hl="'+S.hl[vk]+'"':'')+'><sup>'+v+'</sup>'+fmt(t)+(S.notes[vk]?'<span class="notemark" title="Has a note"></span>':'')+'</span> ';
+  });
+  if(open) html+="</p>";
+  const isRead=!!S.read[key];
+  const prev=c>1?[b.id,c-1]:(BOOKS[BOOKS.indexOf(b)-1]?[BOOKS[BOOKS.indexOf(b)-1].id,G[BOOKS[BOOKS.indexOf(b)-1].id].length]:null);
+  const nb=BOOKS[BOOKS.indexOf(b)+1], next=c<G[b.id].length?[b.id,c+1]:(nb?[nb.id,1]:null);
+  m.innerHTML='<div class="wrap">'+
+  '<div class="reader-bar"><div class="picker"><select class="sel" id="bookSel" aria-label="Book">'+BOOKS.map(x=>'<option value="'+x.id+'"'+(x===b?' selected':'')+'>'+x.name+'</option>').join("")+'</select>'+
+  '<button class="sel" id="chapBtn" aria-label="Choose chapter">Chapter '+c+' ▾</button></div>'+
+  '<div class="row"><button class="btn" data-read="'+(prev?prev.join(" "):"")+'" '+(prev?'':'disabled')+' aria-label="Previous chapter">'+ico("prev")+'</button><button class="btn" data-read="'+(next?next.join(" "):"")+'" '+(next?'':'disabled')+' aria-label="Next chapter">'+ico("next")+'</button><button class="btn" id="setBtn" aria-label="Reading settings">'+ico("gear")+'</button></div></div>'+
+  (c===1?introCard(b):"")+
+  '<header class="chap-head"><span class="eyebrow">'+esc(b.title)+'</span><h1 class="chap-title">'+esc(b.titles[c-1])+'</h1><span class="small muted">Chapter '+c+' · '+ch.length+' verses · '+countWJ(ch)+' with words of Jesus</span></header>'+
+  '<div class="text '+(set.mode==="verse"?"verses":"")+(set.red?"":" nored")+(set.nums?"":" nonum")+(set.gloss?"":" nogloss")+'" id="text">'+html+'</div>'+
+  '<p class="small muted no-print" style="margin-top:6px">Tap a verse to highlight it, add a note, or copy it. Underlined words have a short explanation.</p>'+
+  '<div class="chap-foot"><button class="btn '+(isRead?"":"red")+'" id="markRead">'+ico("check")+(isRead?"Read · tap to undo":"Mark chapter as read")+'</button>'+
+  (next?'<button class="btn primary" data-read="'+next.join(" ")+'">Continue to '+BOOK[next[0]].name+' '+next[1]+' '+ico("next")+'</button>':'')+'</div></div>';
+  $("#bookSel").onchange=e=>go("read",{b:e.target.value,c:1});
+  $("#chapBtn").onclick=()=>chapterPicker(b,c);
+  $("#setBtn").onclick=settingsSheet;
+  $("#markRead").onclick=()=>{ if(S.read[key]) delete S.read[key]; else S.read[key]=Date.now(); syncPlanFromRead(); save(); vRead(m); if(S.read[key]) toast("Marked "+b.name+" "+c+" as read"); };
+  if(sub.v){ const v1=sub.v, v2=sub.v2||sub.v; sub.v=null; setTimeout(()=>{ const el=$('.v[data-v="'+v1+'"]',m); if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); for(let v=v1;v<=v2;v++){ const e=$('.v[data-v="'+v+'"]',m); if(e){e.classList.add("flash"); setTimeout(()=>e.classList.remove("flash"),2600);} } } },60); }
+}
+function countWJ(ch){return ch.filter(t=>t.includes("{")).length;}
+function introCard(b){
+  return '<details class="card intro-card" open><summary><span><span class="eyebrow">Introduction · '+esc(b.symbol)+'</span><span class="h2" style="display:block;margin-top:4px">'+esc(b.portrait)+'</span></span></summary>'+
+  '<p class="lede" style="margin:12px 0 0">'+esc(b.emphasis)+(b.id==="Mark"?' In the King James text of Mark, "straightway", "immediately", "forthwith" and "anon" appear '+markUrgency()+' times.':'')+'</p>'+
+  '<dl><dt>Author</dt><dd>'+esc(b.author)+'</dd><dt>Readers</dt><dd>'+esc(b.audience)+'</dd><dt>Key verse</dt><dd><button class="chip" data-open="'+b.key+'">'+refLabel(b.key)+'</button> <span class="scripture" style="font-size:1rem">'+passageHTML(b.key,{nums:false})+'</span></dd><dt>Chapters</dt><dd>'+G[b.id].length+' chapters, '+G[b.id].reduce((a,c)=>a+c.length,0)+' verses</dd></dl></details>';
+}
+function markUrgency(){let n=0; G.Mark.forEach(c=>c.forEach(v=>{n+=(plain(v).match(/\b(straightway|immediately|forthwith|anon)\b/gi)||[]).length;})); return n;}
+
+function chapterPicker(b,c){
+  openSheet('<div class="sheet-head"><h2 class="h2">'+b.name+'</h2><button class="icon-btn btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+  '<div class="chap-grid">'+G[b.id].map((_,i)=>'<button data-read="'+b.id+' '+(i+1)+'" class="'+(S.read[b.id+"."+(i+1)]?"done ":"")+(i+1===c?"cur":"")+'" title="'+esc(b.titles[i])+'">'+(i+1)+'</button>').join("")+'</div>'+
+  '<p class="small muted" style="margin-bottom:0">Chapters you have read are shown in red.</p>');
+}
+function settingsSheet(){
+  const s=S.settings;
+  openSheet('<div class="sheet-head"><h2 class="h2">Reading settings</h2><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+  '<label class="toggle"><span>Words of Jesus in red</span><input type="checkbox" class="switch" id="sRed" '+(s.red?"checked":"")+'></label>'+
+  '<label class="toggle"><span>Verse numbers</span><input type="checkbox" class="switch" id="sNums" '+(s.nums?"checked":"")+'></label>'+
+  '<label class="toggle"><span>Word help underlines</span><input type="checkbox" class="switch" id="sGloss" '+(s.gloss?"checked":"")+'></label>'+
+  '<div class="toggle"><span>Layout</span><span class="seg"><button data-mode="para" aria-pressed="'+(s.mode==="para")+'">Paragraphs</button><button data-mode="verse" aria-pressed="'+(s.mode==="verse")+'">Verse by verse</button></span></div>'+
+  '<div class="toggle"><span>Text size</span><span class="seg"><button data-size="1" aria-pressed="'+(s.size===1)+'">A</button><button data-size="1.14" aria-pressed="'+(s.size===1.14)+'" style="font-size:1.1em">A</button><button data-size="1.3" aria-pressed="'+(s.size===1.3)+'" style="font-size:1.25em">A</button><button data-size="1.5" aria-pressed="'+(s.size===1.5)+'" style="font-size:1.4em">A</button></span></div>'+
+  '<div class="toggle"><span>Appearance</span><span class="seg"><button data-theme-set="" aria-pressed="'+(!s.theme)+'">Auto</button><button data-theme-set="light" aria-pressed="'+(s.theme==="light")+'">Light</button><button data-theme-set="dark" aria-pressed="'+(s.theme==="dark")+'">Dark</button></span></div>');
+  const upd=()=>{applySettings(); save(); if(view==="read") vRead($("#main"));};
+  $("#sRed").onchange=e=>{s.red=e.target.checked;upd();};
+  $("#sNums").onchange=e=>{s.nums=e.target.checked;upd();};
+  $("#sGloss").onchange=e=>{s.gloss=e.target.checked;upd();};
+  $$("[data-mode]").forEach(x=>x.onclick=()=>{s.mode=x.dataset.mode;upd();settingsSheet();});
+  $$("[data-size]").forEach(x=>x.onclick=()=>{s.size=+x.dataset.size;upd();settingsSheet();});
+  $$("[data-theme-set]").forEach(x=>x.onclick=()=>{s.theme=x.dataset.themeSet;upd();settingsSheet();});
+}
+function applySettings(){
+  document.documentElement.style.setProperty("--fs",S.settings.size+"rem");
+  if(S.settings.theme) document.documentElement.setAttribute("data-theme",S.settings.theme); else document.documentElement.removeAttribute("data-theme");
+}
+
+/* Verse actions */
+function verseSheet(){
+  if(!selected.size){closeLayer();return;}
+  const b=S.last.b, c=S.last.c, vs=[...selected].sort((a,b)=>a-b);
+  const first=b+"."+c+"."+vs[0], label=BOOK[b].name+" "+c+":"+(vs.length>1?vs[0]+(isRun(vs)?"–"+vs[vs.length-1]:"…"):vs[0]);
+  const cur=S.hl[first]||"", note=vs.length===1?(S.notes[first]?.t||""):"";
+  openSheet('<div class="sheet-head"><div><span class="eyebrow">Selected</span><div class="h2" style="font-size:1.3rem">'+nf(label)+'</div></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+  '<div class="row" style="justify-content:space-between"><div class="swatches" role="group" aria-label="Highlight colour">'+["gold","rose","sky","sage"].map(k=>'<button class="swatch" data-hl-set="'+k+'" aria-label="'+k+'" aria-pressed="'+(cur===k)+'" style="background:var(--hl-'+k+')"></button>').join("")+'<button class="swatch" data-hl-set="" aria-label="Remove highlight" style="background:var(--page);display:grid;place-items:center">'+ico("x")+'</button></div>'+
+  '<button class="btn" id="copyV">'+ico("copy")+'Copy</button></div>'+
+  (vs.length===1?'<label class="eyebrow" for="noteTxt" style="display:block;margin:16px 0 6px">Note</label><textarea id="noteTxt" placeholder="What is the Lord showing you in this verse?">'+esc(note)+'</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" id="saveNote">Save note</button></div>':'<p class="small muted">Select a single verse to add a note.</p>'),true);
+  $$("[data-hl-set]").forEach(x=>x.onclick=()=>{ vs.forEach(v=>{const k=b+"."+c+"."+v; if(x.dataset.hlSet) S.hl[k]=x.dataset.hlSet; else delete S.hl[k];}); save(); selected.clear(); closeLayer(); vRead($("#main")); });
+  $("#copyV").onclick=()=>{ const txt=vs.map(v=>plain(G[b][c-1][v-1])).join(" ")+" ("+label+", KJV)"; copy(txt); };
+  const sn=$("#saveNote"); if(sn) sn.onclick=()=>{ const t=$("#noteTxt").value.trim(); if(t) S.notes[first]={t,at:Date.now()}; else delete S.notes[first]; save(); selected.clear(); closeLayer(); vRead($("#main")); toast(t?"Note saved":"Note removed"); };
+}
+const isRun=vs=>vs.every((v,i)=>i===0||v===vs[i-1]+1);
+
+/* ---------- Studies ---------- */
+function vStudies(m){
+  if(sub.id) return vStudy(m,STUDIES.find(s=>s.id===sub.id));
+  const tab=sub.tab||"studies";
+  const done=Object.keys(S.studies).length;
+  m.innerHTML='<div class="wide"><div class="hero"><span class="eyebrow">Studies</span><h1 class="display">What Jesus taught</h1><p class="lede">Thirteen guided studies built from the King James text, each with notes, a memory verse and questions for reflection. You have completed '+done+' of '+STUDIES.length+'.</p></div>'+
+  '<div class="tabsline" role="tablist"><button role="tab" data-stab="studies" aria-selected="'+(tab==="studies")+'">Guided studies</button><button role="tab" data-stab="harmony" aria-selected="'+(tab==="harmony")+'">Life of Christ</button></div>'+
+  (tab==="studies"?'<div class="grid">'+STUDIES.map(s=>'<button class="study-card" data-study="'+s.id+'"><span class="eyebrow">'+esc(s.sub)+'</span><h3>'+esc(s.title)+'</h3><p class="muted small" style="margin:0">'+esc(s.intro.split(". ")[0])+'.</p><span class="meta"><span>'+s.parts.length+' passages</span>'+(S.studies[s.id]?'<span class="done">✓ Completed</span>':'')+'</span></button>').join("")+'</div>':harmonyHTML())+
+  '</div>';
+}
+function harmonyHTML(){
+  return '<p class="lede" style="margin-bottom:16px">Twenty-six events in the life of Jesus, in order, showing which Gospels tell each one. Tap a reference to read it; compare how the four writers tell the same moment.</p>'+
+  '<div class="harm-wrap"><table class="harm"><thead><tr><th class="num">#</th><th>Event</th>'+BOOKS.map(b=>'<th>'+b.name+'</th>').join("")+'</tr></thead><tbody>'+
+  HARMONY.map((h,i)=>'<tr><td class="num">'+(i+1)+'</td><th scope="row">'+esc(h.e)+'</th>'+BOOKS.map(b=>'<td>'+(h.r[b.id]?'<button class="chip" data-open="'+h.r[b.id]+'">'+h.r[b.id].replace(/^\w+ /,"")+'</button>':'<span class="none">—</span>')+'</td>').join("")+'</tr>').join("")+
+  '</tbody></table></div>';
+}
+function vStudy(m,s){
+  const idx=STUDIES.indexOf(s), nx=STUDIES[idx+1];
+  m.innerHTML='<div class="wrap"><button class="btn no-print" data-go="studies">'+ico("prev")+'All studies</button>'+
+  '<div class="hero" style="margin-top:18px"><span class="eyebrow">Study '+(idx+1)+' of '+STUDIES.length+' · '+esc(s.sub)+'</span><h1 class="display">'+esc(s.title)+'</h1><p class="lede" style="color:var(--ink)">'+esc(s.intro)+'</p></div>'+
+  '<div class="memory"><span class="eyebrow">Memory verse · '+refLabel(s.memory)+'</span><div class="scripture" style="margin-top:6px;font-size:1.2rem">'+passageHTML(s.memory,{nums:false})+'</div></div>'+
+  s.parts.map((p,i)=>'<section class="study-part"><span class="n">'+(i+1)+'</span><div style="min-width:0"><h3>'+esc(p.h)+'</h3>'+
+    (p.r2?'<div class="pair"><div><button class="chip" data-open="'+p.r+'">'+refLabel(p.r)+'</button><blockquote class="passage ot scripture">'+passageHTML(p.r)+'</blockquote></div><div><button class="chip" data-open="'+p.r2+'">'+refLabel(p.r2)+'</button><blockquote class="passage scripture">'+passageHTML(p.r2)+'</blockquote></div></div>'
+    :'<button class="chip" data-open="'+p.r+'" style="margin-top:8px">'+refLabel(p.r)+'</button><blockquote class="passage scripture" style="margin-top:8px">'+passageHTML(p.r)+'</blockquote>')+
+    '<p class="note">'+esc(p.n)+'</p></div></section>').join("")+
+  '<div class="ornament">✠</div><h2 class="h2">For reflection</h2><p class="muted small">Your answers are saved as you type and appear in your Journal.</p>'+
+  '<div class="qs" style="margin-top:12px">'+s.q.map((q,i)=>'<div><label for="q_'+s.id+'_'+i+'">'+esc(q)+'</label><textarea id="q_'+s.id+'_'+i+'" data-ans="'+s.id+'.'+i+'" placeholder="Write your thoughts or a prayer…">'+esc(S.answers[s.id+"."+i]||"")+'</textarea></div>').join("")+'</div>'+
+  '<div class="chap-foot"><button class="btn '+(S.studies[s.id]?"":"red")+'" id="doneStudy">'+ico("check")+(S.studies[s.id]?"Completed · tap to undo":"Mark study complete")+'</button>'+(nx?'<button class="btn primary" data-study="'+nx.id+'">Next: '+esc(nx.title)+' '+ico("next")+'</button>':'')+'</div></div>';
+  $("#doneStudy").onclick=()=>{ if(S.studies[s.id]) delete S.studies[s.id]; else {S.studies[s.id]=Date.now(); toast("Study completed");} save(); vStudy(m,s); };
+  let t; $$("[data-ans]",m).forEach(a=>a.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=a.value.trim(); if(v) S.answers[a.dataset.ans]=a.value; else delete S.answers[a.dataset.ans]; save(); },500); });
+}
+
+/* ---------- Plans ---------- */
+function syncPlanFromRead(){
+  const p=PLANS[0], list=p.build(); S.plans[p.id]=S.plans[p.id]||{};
+  list.forEach((r,i)=>{const x=parseRef(r); if(S.read[x.b+"."+x.c1]) S.plans[p.id][i]=S.plans[p.id][i]||Date.now(); else delete S.plans[p.id][i];});
+}
+function vPlans(m){
+  const plan=PLANS.find(p=>p.id===(sub.id||S.plan))||PLANS[0], list=plan.build(), done=S.plans[plan.id]||{};
+  const n=Object.keys(done).length, nx=nextPlanDay(plan);
+  m.innerHTML='<div class="wrap"><div class="hero"><span class="eyebrow">Reading plans</span><h1 class="display">Walk through the Gospels</h1></div>'+
+  '<div class="grid" style="margin-top:8px">'+PLANS.map(p=>{const c=Object.keys(S.plans[p.id]||{}).length; return '<button class="study-card" data-plan="'+p.id+'" style="'+(p===plan?"border-color:var(--red)":"")+'"><span class="eyebrow">'+p.days+' days'+(p.id===S.plan?' · Current':'')+'</span><h3>'+esc(p.name)+'</h3><p class="muted small" style="margin:0">'+esc(p.blurb)+'</p><span class="meta"><span>'+c+' of '+p.days+' done</span></span></button>';}).join("")+'</div>'+
+  '<section class="card" style="margin-top:20px"><div class="row" style="justify-content:space-between"><h2 class="h2">'+esc(plan.name)+'</h2><span class="muted small">'+n+' of '+list.length+' days</span></div>'+
+  '<div class="plan-days" aria-hidden="true">'+list.map((_,i)=>'<span class="'+(done[i]?"on ":"")+(nx&&nx.i===i?"next":"")+'"></span>').join("")+'</div>'+
+  (plan.id===S.plan?'':'<button class="btn red" id="usePlan">Make this my current plan</button>')+
+  (plan.id==="gospels89"?'<p class="small muted">This plan follows the chapters you mark as read in the reader.</p>':'')+
+  '<div class="day-list">'+list.map((r,i)=>{const x=parseRef(r), bk=BOOK[x.b]; const sub=x.v2===null?bk.titles[x.c1-1]:plain(versesOf(r)[0].t).slice(0,90)+"…"; return '<div class="day'+(done[i]?" done":"")+'"><input type="checkbox" data-pday="'+i+'" '+(done[i]?"checked":"")+' aria-label="Day '+(i+1)+' done"><span class="dn">Day '+(i+1)+'</span><span class="dt"><b>'+refLabel(r)+'</b><small>'+esc(sub)+'</small></span><button class="btn" data-plan-open="'+i+'" data-plan-id="'+plan.id+'">Read</button></div>';}).join("")+'</div></section></div>';
+  const u=$("#usePlan"); if(u) u.onclick=()=>{S.plan=plan.id; save(); vPlans(m);};
+  $$("[data-pday]",m).forEach(cb=>cb.onchange=()=>{ const i=+cb.dataset.pday; S.plans[plan.id]=S.plans[plan.id]||{};
+    if(cb.checked) S.plans[plan.id][i]=Date.now(); else delete S.plans[plan.id][i];
+    if(plan.id==="gospels89"){const x=parseRef(list[i]); const k=x.b+"."+x.c1; if(cb.checked) S.read[k]=S.read[k]||Date.now(); else delete S.read[k];}
+    save(); vPlans(m); });
+}
+function openPlanDay(i,pid){
+  const plan=PLANS.find(p=>p.id===(pid||S.plan))||PLANS[0], r=plan.build()[i], x=parseRef(r);
+  go("read",{b:x.b,c:x.c1,v:x.v2===null?null:x.v1,v2:x.v2===null?null:(x.c2===x.c1?x.v2:G[x.b][x.c1-1].length)});
+}
+
+/* ---------- Search ---------- */
+let sq="", sWJ=false;
+function vSearch(m){
+  m.innerHTML='<div class="wrap"><div class="hero"><span class="eyebrow">Search</span><h1 class="display">Search the Gospels</h1></div>'+
+  '<div class="stack" style="margin-top:8px"><input type="search" id="sq" placeholder="Try: faith, kingdom, abide, \'I am\'" value="'+esc(sq)+'" aria-label="Search words">'+
+  '<label class="row small" style="gap:8px"><input type="checkbox" id="swj" '+(sWJ?"checked":"")+' style="accent-color:var(--red);width:18px;height:18px"> Only the words of Jesus (red letters)</label></div><div id="sres"></div></div>';
+  const inp=$("#sq"); let t;
+  inp.oninput=()=>{clearTimeout(t); t=setTimeout(()=>{sq=inp.value; doSearch();},180);};
+  $("#swj").onchange=e=>{sWJ=e.target.checked; doSearch();};
+  doSearch(); setTimeout(()=>inp.focus({preventScroll:true}),30);
+}
+function doSearch(){
+  const out=$("#sres"); const q=sq.trim();
+  if(q.length<2){ out.innerHTML='<div class="empty" style="margin-top:20px">Type a word or phrase to search all 3,779 verses of Matthew, Mark, Luke and John.<div class="row" style="justify-content:center;margin-top:12px">'+["love","believe","kingdom","abide","fear not","verily"].map(w=>'<button class="chip" data-sq="'+w+'">'+w+'</button>').join("")+'</div></div>'; return; }
+  const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/['’]/g,"['’]"),"gi");
+  const hits=[], per={};
+  BOOKS.forEach(b=>G[b.id].forEach((ch,ci)=>ch.forEach((t,vi)=>{
+    let hay=sWJ?(t.match(/\{[^}]*\}/g)||[]).join(" "):t; hay=plain(hay);
+    re.lastIndex=0; if(re.test(hay)){ hits.push([b.id,ci+1,vi+1,t]); per[b.id]=(per[b.id]||0)+1; }
+  })));
+  const shown=hits.slice(0,150);
+  out.innerHTML='<div class="counts"><span class="chip" style="color:var(--ink)">'+hits.length+' verses</span>'+BOOKS.map(b=>per[b.id]?'<span class="chip">'+b.name+' '+per[b.id]+'</span>':'').join("")+'</div>'+
+  (hits.length?shown.map(([b,c,v,t])=>'<div class="result" data-goto="'+b+'|'+c+'|'+v+'"><span class="ref">'+BOOK[b].name+' '+c+':'+v+'</span><div class="scripture">'+hilite(fmt(t,{gloss:false}),re)+'</div></div>').join("")+(hits.length>150?'<p class="muted small">Showing the first 150. Add another word to narrow the search.</p>':''):'<div class="empty">No verses found for “'+esc(q)+'”. Check the spelling, or try the King James form of the word (for example, “saith” or “believeth”).</div>');
+}
+function hilite(html,re){ return html.replace(/(^|>)([^<]+)/g,(m,a,txt)=>a+txt.replace(re,x=>"<mark>"+x+"</mark>")); }
+
+/* ---------- Journal ---------- */
+function vJournal(m){
+  const notes=Object.entries(S.notes).sort((a,b)=>b[1].at-a[1].at);
+  const hls=Object.entries(S.hl).sort((a,b)=>cmpKey(a[0],b[0]));
+  const ans=Object.entries(S.answers).filter(([k,v])=>v&&v.trim());
+  const tab=sub.tab||"notes";
+  const vt=k=>{const [b,c,v]=k.split("."); return G[b][+c-1][+v-1];};
+  const kl=k=>{const [b,c,v]=k.split("."); return BOOK[b].name+" "+c+":"+v;};
+  let body="";
+  if(tab==="notes") body=notes.length?notes.map(([k,n])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button> <span class="small muted">'+new Date(n.at).toLocaleDateString()+'</span><div class="scripture" style="margin-top:8px">'+fmt(vt(k),{gloss:false})+'</div><div class="jnote">'+esc(n.t)+'</div></div>').join(""):'<div class="empty">No notes yet. In the reader, tap any verse and choose “Note” to write what God is showing you.</div>';
+  if(tab==="hl") body=hls.length?hls.map(([k,c])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button><div class="scripture" style="margin-top:8px"><span class="v" data-hl="'+c+'">'+fmt(vt(k),{gloss:false})+'</span></div></div>').join(""):'<div class="empty">No highlights yet. Tap a verse in the reader and pick a colour.</div>';
+  if(tab==="ref") body=ans.length?STUDIES.filter(s=>s.q.some((_,i)=>S.answers[s.id+"."+i])).map(s=>'<div class="jitem"><button class="chip" data-study="'+s.id+'">'+esc(s.title)+'</button>'+s.q.map((q,i)=>S.answers[s.id+"."+i]?'<p style="margin:12px 0 0;font-family:var(--f-text)">'+esc(q)+'</p><div class="jnote">'+esc(S.answers[s.id+"."+i])+'</div>':'').join("")+'</div>').join(""):'<div class="empty">Your answers to study questions will gather here.</div>';
+  m.innerHTML='<div class="wrap"><div class="hero"><span class="eyebrow">Journal</span><h1 class="display">What I am learning</h1><p class="lede">'+pl(notes.length,"note")+' · '+pl(hls.length,"highlighted verse")+' · '+pl(ans.length,"reflection")+'</p></div>'+
+  '<div class="tabsline" role="tablist"><button role="tab" data-jtab="notes" aria-selected="'+(tab==="notes")+'">Notes</button><button role="tab" data-jtab="hl" aria-selected="'+(tab==="hl")+'">Highlights</button><button role="tab" data-jtab="ref" aria-selected="'+(tab==="ref")+'">Reflections</button></div>'+body+'</div>';
+}
+const pl=(n,w)=>n+" "+w+(n===1?"":"s");
+const nf=s=>String(s).replace(/(\d[\d:–-]*)/g,'<span class="nf">$1</span>');
+function cmpKey(a,b){const pa=a.split("."),pb=b.split("."); const bi=x=>BOOKS.findIndex(y=>y.id===x); return bi(pa[0])-bi(pb[0])||pa[1]-pb[1]||pa[2]-pb[2];}
+
+/* ---------- Guide ---------- */
+function vGuide(m){
+  const wj=BOOKS.reduce((a,b)=>a+G[b.id].reduce((x,c)=>x+countWJ(c),0),0);
+  m.innerHTML='<div class="wrap"><div class="hero"><span class="eyebrow">Guide</span><h1 class="display">Reading the King James Gospels</h1><p class="lede">The Authorized Version of 1611 has shaped English-speaking faith for four centuries. A few conventions help it speak clearly.</p></div>'+
+  '<section class="stack" style="margin-top:12px">'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">The red letters</h2><p>Words spoken by Jesus are printed in <span class="wj">red</span>, a tradition begun by Louis Klopsch in 1899 and inspired by Luke 22:20, “This cup is the new testament in my blood.” In these four Gospels, '+wj.toLocaleString()+' verses contain His words.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Words in italics</h2><p class="scripture" style="font-size:1rem">The 1611 translators set in <i class="add">italics</i> any word they added to make the English read smoothly, with no exact equivalent in the Greek. For example: “Blessed <i class="add">are</i> the poor in spirit.”</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">L<span class="sc">ord</span> in small capitals</h2><p class="scripture" style="font-size:1rem">In Old Testament quotations, <span class="sc">lord</span> in small capitals stands for God\'s covenant name, YHWH, revealed to Moses at the burning bush.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Thee, thou and ye</h2><p>“Thou” and “thee” are always singular, and “ye” and “you” are plural. When Jesus says “Simon, Simon, Satan hath desired to have <b>you</b>… but I have prayed for <b>thee</b>” (Luke 22:31-32), the difference matters: Satan wanted all the disciples, and Jesus prayed for Peter personally.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Using Red Letter</h2><p>Tap a verse to highlight it, write a note or copy it. Your progress, notes and reflections save automatically'+(remote?" to your account, so they follow you between your phone and computer.":". When you open the app from your Claude account they sync between devices.")+' On a phone, use your browser\'s “Add to Home Screen” to keep Red Letter one tap away.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Printable study guide</h2><p>Every study, the Life of Christ harmony and the 89-day checklist, laid out for paper with space to write.</p><button class="btn red" data-go="booklet">Open the printable booklet</button></div>'+
+  '</section><div class="ornament">✠</div><h2 class="h2">Word help</h2><p class="muted">Older English words and terms from the world of the Gospels. In the reader, these words are underlined; tap one to see its meaning.</p>'+
+  '<div class="gloss" style="margin-top:10px">'+GLOSS.map(g=>'<div><b>'+esc(glossName(g))+'</b><span class="small">'+esc(g[1])+'</span></div>').join("")+'</div>'+
+  '<p class="small muted" style="margin-top:28px">Scripture: King James Version (Authorized Version), public domain. Study notes written for this app.</p></div>';
+}
+
+function glossName(g){ const w=g[0].split("|")[0].replace(/s\?$/,"").replace(/\[ae\]/,"a"); return w.charAt(0).toUpperCase()+w.slice(1); }
+
+/* ---------- Printable booklet ---------- */
+function vBooklet(m){
+  const lines=n=>'<div class="lines">'+'<i></i>'.repeat(n)+'</div>';
+  m.innerHTML='<div class="wrap booklet">'+
+  '<div class="no-print row" style="margin-bottom:18px"><button class="btn" data-go="guide">'+ico("prev")+'Back</button><span class="small muted">Use your browser\'s Print command on this page, or open the PDF copy saved in your project files.</span></div>'+
+  '<section class="cover"><span class="eyebrow">A study guide to the four Gospels · King James Version</span><h1 class="display" style="font-size:3.4rem">Red Letter</h1><p class="lede">Thirteen studies in the words and works of Jesus Christ, with the Life of Christ in the four Gospels and a chapter-by-chapter reading checklist.</p>'+
+  '<blockquote class="passage scripture" style="margin-top:28px">'+passageHTML("John 20:31",{nums:false})+'<div class="ref" style="margin-top:6px">John 20:31</div></blockquote></section>'+
+  '<section class="pb"><h2 class="h2">The four Gospels</h2>'+BOOKS.map(b=>'<div class="bk"><span class="eyebrow">'+esc(b.symbol)+'</span><h3 class="h2" style="font-size:1.4rem">'+esc(b.title)+'</h3><p style="margin:4px 0;font-family:var(--f-text)"><b>'+esc(b.portrait)+'.</b> '+esc(b.emphasis)+'</p><p class="small muted" style="margin:0">Key verse, '+refLabel(b.key)+': <span class="scripture" style="font-size:.95rem">'+passageHTML(b.key,{nums:false})+'</span></p></div>').join("")+'</section>'+
+  STUDIES.map((s,si)=>'<section class="pb"><span class="eyebrow">Study '+(si+1)+' · '+esc(s.sub)+'</span><h2 class="display" style="font-size:2.2rem;margin:4px 0 10px">'+esc(s.title)+'</h2><p style="font-family:var(--f-text)">'+esc(s.intro)+'</p>'+
+    '<div class="memory"><span class="eyebrow">Memory verse · '+refLabel(s.memory)+'</span><div class="scripture" style="margin-top:4px">'+passageHTML(s.memory,{nums:false})+'</div></div>'+
+    s.parts.map((p,i)=>'<div class="study-part"><span class="n">'+(i+1)+'</span><div style="min-width:0"><h3>'+esc(p.h)+' <span class="ref">'+refLabel(p.r)+(p.r2?' · '+refLabel(p.r2):'')+'</span></h3><blockquote class="passage scripture" style="margin-top:6px">'+passageHTML(p.r)+'</blockquote>'+(p.r2?'<blockquote class="passage scripture" style="margin-top:6px">'+passageHTML(p.r2)+'</blockquote>':'')+'<p class="note">'+esc(p.n)+'</p></div></div>').join("")+
+    '<h3 class="h2" style="font-size:1.3rem;margin-top:18px">For reflection</h3>'+s.q.map((q,i)=>'<div class="bq"><p>'+(i+1)+'. '+esc(q)+'</p>'+lines(4)+'</div>').join("")+'</section>').join("")+
+  '<section class="pb"><h2 class="h2">The Life of Christ in the four Gospels</h2><div class="harm-wrap" style="margin-top:12px"><table class="harm"><thead><tr><th class="num">#</th><th>Event</th>'+BOOKS.map(b=>'<th>'+b.name+'</th>').join("")+'</tr></thead><tbody>'+HARMONY.map((h,i)=>'<tr><td class="num">'+(i+1)+'</td><th scope="row">'+esc(h.e)+'</th>'+BOOKS.map(b=>'<td>'+(h.r[b.id]?h.r[b.id].replace(/^\w+ /,""):'<span class="none">—</span>')+'</td>').join("")+'</tr>').join("")+'</tbody></table></div></section>'+
+  '<section class="pb"><h2 class="h2">The Four Gospels: <span class="nf">89</span>-day checklist</h2><div class="check89">'+PLANS[0].build().map((r,i)=>{const x=parseRef(r); return '<div><span class="box"></span><span class="dn">'+(i+1)+'</span><span>'+refLabel(r)+' <span class="muted">'+esc(BOOK[x.b].titles[x.c1-1])+'</span></span></div>';}).join("")+'</div></section>'+
+  '</div>';
+}
+
+/* ---------- Layer: sheets, modals, popovers ---------- */
+let layerVerse=false;
+function openSheet(html,isVerse){ layerVerse=!!isVerse; $("#layer").innerHTML=(isVerse?'':'<div class="scrim" data-close></div>')+'<div class="sheet" role="dialog" aria-modal="'+(!isVerse)+'">'+html+'</div>'; }
+function openModal(html){ layerVerse=false; $("#layer").innerHTML='<div class="scrim" data-close></div><div class="modal" role="dialog" aria-modal="true">'+html+'</div>'; }
+function closeLayer(){ $("#layer").innerHTML=""; if(layerVerse){ selected.clear(); $$(".v.sel-v").forEach(e=>e.classList.remove("sel-v")); layerVerse=false; } }
+function passageModal(ref){
+  const r=parseRef(ref); if(!r) return;
+  openModal('<div class="sheet-head"><div><span class="eyebrow">'+(r.ot?"Old Testament":esc(BOOK[r.b].title))+'</span><h2 class="h2">'+nf(refLabel(ref))+'</h2></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+   '<div class="scripture">'+passageHTML(ref)+'</div>'+
+   '<div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn" data-copy="'+esc(ref)+'">'+ico("copy")+'Copy</button>'+(r.ot?'':'<button class="btn primary" data-goto="'+r.b+'|'+r.c1+'|'+(r.v2===null?"":r.v1)+'|'+(r.v2===null?"":(r.c2===r.c1?r.v2:""))+'">Open in reader</button>')+'</div>');
+}
+function copy(text){
+  const done=()=>toast("Copied");
+  try{ navigator.clipboard.writeText(text).then(done,()=>fallback()); }catch(e){ fallback(); }
+  function fallback(){ openModal('<div class="sheet-head"><h2 class="h2">Copy this text</h2><button class="btn" data-close>'+ico("x")+'</button></div><textarea id="cpy" readonly>'+esc(text)+'</textarea>'); const t=$("#cpy"); t.focus(); t.select(); }
+}
+let toastT; function toast(msg){ let t=$(".toast"); if(!t){ t=document.createElement("div"); t.className="toast"; t.setAttribute("role","status"); document.body.appendChild(t);} t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true;},1800); }
+function glossPop(el){
+  const g=glossFor(el.dataset.gl); if(!g) return;
+  $$(".pop").forEach(p=>p.remove());
+  const p=document.createElement("div"); p.className="pop"; p.innerHTML="<b>"+esc(el.dataset.gl)+"</b>"+esc(g[1]); document.body.appendChild(p);
+  const r=el.getBoundingClientRect(), w=Math.min(300,window.innerWidth-24);
+  p.style.width=w+"px"; p.style.left=Math.max(12,Math.min(window.innerWidth-w-12,r.left+r.width/2-w/2))+"px";
+  const h=p.offsetHeight; p.style.top=(r.top>h+16?r.top-h-8:r.bottom+8)+"px";
+  setTimeout(()=>document.addEventListener("click",function f(){p.remove();document.removeEventListener("click",f,true);},true),0);
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],[data-read],[data-open],[data-study],[data-goto],[data-copy],[data-close],[data-plan],[data-plan-open],[data-stab],[data-jtab],[data-sq],.gl,.v");
+  if(!t) return;
+  if(t.matches(".gl")&&S.settings.gloss){ e.stopPropagation(); glossPop(t); return; }
+  if(t.dataset.go){ e.preventDefault(); go(t.dataset.go); return; }
+  if(t.dataset.read){ const [b,c]=t.dataset.read.split(" "); go("read",{b,c:+c}); return; }
+  if(t.dataset.open){ passageModal(t.dataset.open); return; }
+  if(t.dataset.study){ go("studies",{id:t.dataset.study}); return; }
+  if(t.dataset.goto){ const [b,c,v,v2]=t.dataset.goto.split("|"); go("read",{b,c:+c,v:v?+v:null,v2:v2?+v2:null}); return; }
+  if(t.dataset.copy){ const r=t.dataset.copy; copy(versesOf(r).map(x=>plain(x.t)).join(" ")+" ("+refLabel(r)+", KJV)"); return; }
+  if(t.hasAttribute("data-close")){ closeLayer(); return; }
+  if(t.dataset.plan){ sub={id:t.dataset.plan}; vPlans($("#main")); return; }
+  if(t.dataset.planOpen){ openPlanDay(+t.dataset.planOpen,t.dataset.planId); return; }
+  if(t.dataset.stab){ sub={tab:t.dataset.stab}; vStudies($("#main")); return; }
+  if(t.dataset.jtab){ sub={tab:t.dataset.jtab}; vJournal($("#main")); return; }
+  if(t.dataset.sq){ sq=t.dataset.sq; $("#sq").value=sq; doSearch(); return; }
+  if(t.matches(".v")&&view==="read"&&t.closest("#text")){ const v=+t.dataset.v; if(selected.has(v)){selected.delete(v);t.classList.remove("sel-v");} else {selected.add(v);t.classList.add("sel-v");} verseSheet(); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ closeLayer(); $$(".pop").forEach(p=>p.remove()); }
+  if(view==="read"&&!$("#layer").innerHTML&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
+    if(e.key==="ArrowRight") $$('.reader-bar [data-read]')[1]?.click();
+    if(e.key==="ArrowLeft") $$('.reader-bar [data-read]')[0]?.click();
+  }
+});
+
+/* ---------- Boot ---------- */
+applySettings();
+const h=location.hash.slice(1); if(ROUTES.includes(h)) view=h;
+render();
+connect();
+})();
+</script>
