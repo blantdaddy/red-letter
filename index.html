@@ -250,6 +250,53 @@ mark{background:var(--hl-gold);color:inherit;border-radius:3px;padding:0 1px}
 .gloss div{padding:10px 0;border-bottom:1px solid var(--line)}
 .gloss b{font-family:var(--f-display);font-weight:400;font-size:1.15rem;display:block}
 
+/* Quiz */
+.quiz-text{font-family:var(--f-text);font-size:1.15rem;margin:8px 0 14px}
+.quiz-opts{display:grid;gap:8px}
+.quiz-opt{text-align:left;border:1px solid var(--line);background:var(--page);border-radius:12px;padding:12px 14px;font-size:.98rem}
+.quiz-opt:not(:disabled):hover{border-color:var(--lapis)}
+.quiz-opt.right{border-color:#3F9D5A;background:color-mix(in srgb,#3F9D5A 14%,var(--page))}
+.quiz-opt.wrong{border-color:var(--red);background:color-mix(in srgb,var(--red) 12%,var(--page))}
+.quiz-opt:disabled{cursor:default;color:var(--ink)}
+.quiz-verdict{font-weight:600;margin:14px 0 8px}
+.quiz-verdict.ok{color:#3F9D5A}.quiz-verdict.no{color:var(--red)}
+.quiz-done{text-align:center;padding:10px 0}
+/* Memory */
+.mem-card{display:flex;flex-direction:column;gap:10px}
+.mem-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.mem-steps span{height:5px;border-radius:9px;background:var(--soft)}
+.mem-steps span.on{background:var(--red)}
+.mem-big{font-size:1.25rem;line-height:1.9;margin-bottom:12px}
+.mem-blank{display:inline-block;border-bottom:2px solid var(--muted);line-height:1.2}
+.mem-blank.cur{border-bottom-color:var(--red);background:color-mix(in srgb,var(--red) 8%,transparent)}
+.mem-filled{color:var(--red);font-weight:600}
+.mem-bank{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.mem-bank .chip{font-size:.95rem;padding:6px 12px;color:var(--ink)}
+.mem-bank .chip.used{opacity:.3}
+.ml{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;letter-spacing:.06em}
+.ml.shown{color:var(--red);letter-spacing:0}
+.mem-miss{text-decoration:underline wavy var(--red);text-underline-offset:4px}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+/* Compare */
+.cmp{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:14px;align-items:start}
+.cmp-col{background:var(--page);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.cmp-col header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cmp-text{font-size:1rem;line-height:1.7;margin-top:10px}
+.uniq{text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--gold) 75%,transparent);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.nouniq .uniq{text-decoration:none}
+@media (max-width:860px){.cmp{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(86%,420px);overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.cmp-col{scroll-snap-align:start}}
+@media (min-width:861px) and (max-width:1180px){.cmp{grid-template-columns:repeat(min(var(--n),2),minmax(0,1fr))}}
+/* Read aloud */
+.v.speaking{background:color-mix(in srgb,var(--lapis) 16%,transparent)}
+.player{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:12px;align-items:center;background:var(--page);border:1px solid var(--line);border-radius:999px;padding:6px 6px 6px 16px;box-shadow:0 8px 30px rgba(0,0,0,.18);max-width:calc(100% - 24px)}
+@media (max-width:860px){.player{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+/* Ask */
+.ask-only{display:none!important}
+.can-ask .ask-only{display:inline-flex!important}
+.ask-out{font-family:var(--f-text);font-size:1rem;line-height:1.65;margin-top:14px}
+.ask-out p{margin:0 0 .7em}.ask-out ul{margin:0 0 .7em;padding-left:1.2em}
+
 /* Booklet */
 .booklet .cover{padding:40px 0 20px}
 .booklet .bk{padding:14px 0;border-bottom:1px solid var(--line)}
@@ -664,6 +711,66 @@ const GLOSS = [
   ["conversation","Behaviour or way of life."]
 ];
 
+/* Study quizzes: [question, [correct, wrong, wrong, wrong], answer reference]. Options are shuffled when shown. */
+const QUIZ = {
+  who:[["In Mark 2, how did Jesus show He had power to forgive sins?",["He healed the man sick of the palsy","He quoted the prophet Isaiah","He called down fire from heaven","He wrote on the ground"],"Mark 2:10-12"],
+       ["Who revealed to Peter that Jesus is the Christ?",["The Father which is in heaven","His brother Andrew","John the Baptist","The other disciples"],"Matt 16:17"],
+       ["What did Thomas say when he saw the risen Jesus?",["My Lord and my God","Rabboni, Master","Lord, save me","Truly this was the Son of God"],"John 20:28"],
+       ["According to John 1:3, what was made by the Word?",["All things","Only mankind","The law of Moses","The temple"],"John 1:3"]],
+  beatitudes:[["The meek shall inherit what?",["The earth","The kingdom of heaven","Mercy","The land of Canaan"],"Matt 5:5"],
+       ["Who did Jesus say shall see God?",["The pure in heart","The peacemakers","The merciful","The meek"],"Matt 5:8"],
+       ["What shall the peacemakers be called?",["The children of God","The salt of the earth","The friends of Jesus","The blessed of the Lord"],"Matt 5:9"],
+       ["What belongs to the poor in spirit?",["The kingdom of heaven","Comfort","The earth","Righteousness"],"Matt 5:3"]],
+  mount:[["\"Ye are the salt of the earth\" and the what of the world?",["Light","Hope","Joy","Strength"],"Matt 5:13-14"],
+       ["Jesus said He came not to destroy the law, but to do what?",["Fulfil it","Replace it","Explain it","Shorten it"],"Matt 5:17"],
+       ["Where did Jesus tell us to lay up treasures?",["In heaven","In the temple","In the earth","In storehouses"],"Matt 6:19-20"],
+       ["What should we seek first?",["The kingdom of God, and his righteousness","Food and raiment","Wisdom and understanding","Peace with all men"],"Matt 6:33"],
+       ["The wise man built his house upon what?",["A rock","The sand","A hill","The sea shore"],"Matt 7:24"]],
+  parables:[["In the parable of the sower, what is the seed?",["The word of the kingdom","Faith","Money","The disciples"],"Matt 13:19"],
+       ["Who stopped to help the man who fell among thieves?",["A Samaritan","A priest","A Levite","The innkeeper"],"Luke 10:33"],
+       ["What did the prodigal son's father do when he saw him a great way off?",["Ran, and fell on his neck, and kissed him","Waited for him at the door","Sent a servant to meet him","Told him to work as a hired servant"],"Luke 15:20"],
+       ["Who prayed, \"God be merciful to me a sinner\"?",["The publican","The Pharisee","The persistent widow","The unjust steward"],"Luke 18:13"],
+       ["What did the servant with one talent do with it?",["Hid it in the earth","Traded and doubled it","Gave it to the poor","Spent it"],"Matt 25:25"]],
+  iam:[["\"I am the bread of life: he that cometh to me shall never…\"",["Hunger","Die","Fall","Fear"],"John 6:35"],
+       ["\"He that followeth me shall not walk in…\"",["Darkness","Fear","Sin","Vain"],"John 8:12"],
+       ["What does the good shepherd do for the sheep?",["Giveth his life for the sheep","Counts them every morning","Builds a fold for them","Leads them to Jerusalem"],"John 10:11"],
+       ["To whom did Jesus say, \"I am the resurrection, and the life\"?",["Martha","Mary Magdalene","Lazarus","Peter"],"John 11:24-25"],
+       ["Finish the verse: \"No man cometh unto the Father, but…\"",["By me","By the law","By good works","By the prophets"],"John 14:6"]],
+  signs:[["Where did Jesus do His first sign?",["Cana of Galilee","Capernaum","Jerusalem","Bethany"],"John 2:11"],
+       ["How long had the man at the pool of Bethesda been sick?",["Thirty and eight years","Twelve years","Eighteen years","Forty years"],"John 5:5"],
+       ["Who had the five barley loaves and two small fishes?",["A lad","Andrew","Philip","A widow"],"John 6:9"],
+       ["How long had Lazarus lain in the grave when Jesus arrived?",["Four days","Three days","Seven days","One day"],"John 11:17"],
+       ["Why did John write down these signs?",["That ye might believe that Jesus is the Christ","To record every miracle Jesus did","To answer the Pharisees","To teach the disciples to heal"],"John 20:30-31"]],
+  prayer:[["When did Jesus go out to pray in Mark 1:35?",["A great while before day","At the ninth hour","After the evening meal","At midnight"],"Mark 1:35"],
+       ["What did Jesus do before choosing the twelve apostles?",["Continued all night in prayer","Fasted forty days","Went to the temple","Asked John the Baptist"],"Luke 6:12-13"],
+       ["What did Jesus pray in Gethsemane?",["Not as I will, but as thou wilt","Father, glorify thy name","Lord, teach us to pray","Into thy hands I commend my spirit"],"Matt 26:39"],
+       ["What will the heavenly Father give to them that ask Him?",["The Holy Spirit","Riches","Long life","A sign from heaven"],"Luke 11:13"]],
+  love:[["Which commandment did Jesus call \"the first and great commandment\"?",["Love the Lord thy God with all thy heart","Love thy neighbour as thyself","Honour thy father and thy mother","Remember the sabbath day"],"Matt 22:37-38"],
+       ["\"A new commandment I give unto you, That ye love one another…\"",["As I have loved you","As the law commands","As ye love yourselves","With all your strength"],"John 13:34"],
+       ["\"Greater love hath no man than this, that a man…\"",["Lay down his life for his friends","Forgive his enemies","Give all to the poor","Love his neighbour"],"John 15:13"],
+       ["What did the King say to those who helped \"the least of these\"?",["Ye have done it unto me","Your reward is on earth","Ye have fulfilled the law","Go and do likewise"],"Matt 25:40"]],
+  kingdom:[["What did Jesus preach in Mark 1:15?",["The time is fulfilled… repent ye, and believe the gospel","Blessed are the poor in spirit","I am the light of the world","Love your enemies"],"Mark 1:15"],
+       ["\"Except a man be born again, he cannot…\"",["See the kingdom of God","Enter the temple","Keep the law","Be forgiven"],"John 3:3"],
+       ["To whom did Jesus say, \"My kingdom is not of this world\"?",["Pilate","Herod","Caiaphas","Nicodemus"],"John 18:36"],
+       ["Who is greatest in the kingdom of heaven?",["Whoever humbles himself as a little child","The one who keeps the most commandments","The first to follow Jesus","Whoever gives the most"],"Matt 18:4"]],
+  follow:[["What did Peter and Andrew leave \"straightway\" to follow Jesus?",["Their nets","Their father","Their boat and hired servants","Their tax table"],"Matt 4:20"],
+       ["\"Let him deny himself, and take up his cross…\"",["Daily","Willingly","Alone","In secret"],"Luke 9:23"],
+       ["How many times did Jesus ask Peter, \"Lovest thou me?\"",["Three","Two","Seven","Once"],"John 21:17"],
+       ["The Son of man came not to be ministered unto, but…",["To minister, and to give his life a ransom for many","To judge the world","To destroy the law","To be a king"],"Mark 10:45"]],
+  cross:[["What was the first saying of Jesus from the cross?",["Father, forgive them; for they know not what they do","It is finished","I thirst","Woman, behold thy son"],"Luke 23:34"],
+       ["What did Jesus promise the thief who believed?",["To day shalt thou be with me in paradise","Thy sins be forgiven thee","Go in peace","Thou art not far from the kingdom"],"Luke 23:43"],
+       ["\"My God, my God, why hast thou forsaken me?\" quotes which Psalm?",["Psalm 22","Psalm 23","Psalm 51","Psalm 110"],"Matt 27:46"],
+       ["In John, what did Jesus say just before He bowed His head?",["It is finished","Father, into thy hands","I thirst","Peace be unto you"],"John 19:30"]],
+  risen:[["Whom did Jesus call by name at the tomb?",["Mary","Peter","Joanna","Salome"],"John 20:16"],
+       ["On the road to Emmaus, Jesus began explaining the Scriptures from…",["Moses and all the prophets","The book of Psalms","The prophet Isaiah","The book of Daniel"],"Luke 24:27"],
+       ["When did Jesus appear to the disciples with Thomas present?",["After eight days","The next morning","Forty days later","On the third day"],"John 20:26"],
+       ["\"Lo, I am with you alway, even unto…\"",["The end of the world","The last day","Ye see me again","The kingdom come"],"Matt 28:20"]],
+  fulfilled:[["Which prophet foretold the Messiah would come from Bethlehem?",["Micah","Isaiah","Hosea","Zechariah"],"Matt 2:5-6"],
+       ["According to Zechariah 9:9, how would the King come?",["Riding upon an ass","Riding upon a white horse","In a chariot of fire","On the clouds of heaven"],"Zech 9:9"],
+       ["Which prophet's scroll did Jesus read in the synagogue at Nazareth?",["Isaiah","Jeremiah","Malachi","Moses"],"Luke 4:17"],
+       ["\"Out of Egypt have I called my son\" was fulfilled when…",["Jesus' family returned from Egypt","Moses led Israel out","Jesus was baptized","Jesus rode into Jerusalem"],"Matt 2:14-15"]]
+};
+
 </script>
 <script>
 (function(){
@@ -677,7 +784,7 @@ const TOTAL=89;
 
 /* ---------- State & sync ---------- */
 const KEY="redletter.v1";
-const blank=()=>({v:1,updated:0,read:{},hl:{},notes:{},plans:{},answers:{},studies:{},last:{b:"Matt",c:1},plan:"gospels89",settings:{red:true,nums:true,mode:"para",size:1.14,gloss:true,theme:""}});
+const blank=()=>({v:1,updated:0,read:{},hl:{},notes:{},plans:{},answers:{},studies:{},last:{b:"Matt",c:1},plan:"gospels89",memory:{},quiz:{},settings:{rate:0.95,autoNext:true,uniq:true,red:true,nums:true,mode:"para",size:1.14,gloss:true,theme:""}});
 let S=blank();
 try{const raw=localStorage.getItem(KEY); if(raw) S=Object.assign(blank(),JSON.parse(raw));}catch(e){}
 S.settings=Object.assign(blank().settings,S.settings||{});
@@ -764,7 +871,7 @@ const IC={
   journal:'<path d="M6 3.5h11a1.5 1.5 0 0 1 1.5 1.5v15l-3-2-3 2-3-2-3 2V5A1.5 1.5 0 0 1 6 3.5z"/><path d="M9 8h6M9 12h4"/>',
   guide:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
   prev:'<path d="M15 5l-7 7 7 7"/>', next:'<path d="M9 5l7 7-7 7"/>', gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
-  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>', copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>'
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>', copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>', x:'<path d="M6 6l12 12M18 6L6 18"/>', play:'<path d="M8 5.5v13l11-6.5z"/>', stop:'<rect x="6.5" y="6.5" width="11" height="11" rx="1.5"/>', ask:'<path d="M4 5h16v11H9l-5 4z"/><path d="M10 9.2a2 2 0 1 1 2.8 1.8c-.5.2-.8.7-.8 1.2M12 14h.01"/>', mem:'<path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/>'
 };
 const ico=n=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>';
 const VIEWS=[["today","Today"],["read","Read"],["studies","Studies"],["plans","Plans"],["search","Search"],["journal","Journal"],["guide","Guide"]];
@@ -772,6 +879,7 @@ const VIEWS=[["today","Today"],["read","Read"],["studies","Studies"],["plans","P
 /* ---------- Router ---------- */
 let view="today", sub={};
 function go(v,opts={}){
+  if(tts.on) stopTTS();
   view=v; sub=opts; closeLayer();
   if(location.hash.slice(1)!==v){ try{history.replaceState(null,"","#"+v);}catch(e){ location.hash=v; } }
   render(); window.scrollTo(0,0);
@@ -812,6 +920,9 @@ function vToday(m){
    '<p class="small muted" style="margin:12px 0 0">'+n+' of 89 Gospel chapters read.</p></section>'+
   '</div>'+
   '<div class="ornament">✠</div>'+
+  (()=>{ const ml=memoryList(), cur=ml.find(x=>!S.memory[x.ref]?.mastered); const done=ml.length-ml.filter(x=>!S.memory[x.ref]?.mastered).length;
+    return '<section class="card stack" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><span class="eyebrow">Memory verse</span><span class="small muted">'+done+' of '+ml.length+' learned</span></div>'+
+    (cur?'<div class="scripture" style="font-size:1.05rem;line-height:1.6">'+passageHTML(cur.ref,{nums:false})+'</div><div class="row" style="justify-content:space-between"><span class="ref">'+refLabel(cur.ref)+'</span><button class="btn red" data-mem="'+esc(cur.ref)+'">'+ico("mem")+'Practise</button></div>':'<p>You have learned every memory verse. Add more from the reader.</p>')+'</section>'; })()+
   '<section class="stack"><span class="eyebrow">Study for today</span>'+
   '<button class="study-card" data-study="'+st.id+'"><span class="eyebrow">'+esc(st.sub)+'</span><h3>'+esc(st.title)+'</h3><p class="muted small" style="margin:0">'+esc(st.intro.slice(0,170))+'…</p><span class="meta"><span>'+st.parts.length+' passages · '+st.q.length+' questions</span>'+(S.studies[st.id]?'<span class="done">Completed</span>':'<span>Begin →</span>')+'</span></button></section>'+
   '<div class="ornament">✠</div>'+
@@ -840,16 +951,18 @@ function vRead(m){
   m.innerHTML='<div class="wrap">'+
   '<div class="reader-bar"><div class="picker"><select class="sel" id="bookSel" aria-label="Book">'+BOOKS.map(x=>'<option value="'+x.id+'"'+(x===b?' selected':'')+'>'+x.name+'</option>').join("")+'</select>'+
   '<button class="sel" id="chapBtn" aria-label="Choose chapter">Chapter '+c+' ▾</button></div>'+
-  '<div class="row"><button class="btn" data-read="'+(prev?prev.join(" "):"")+'" '+(prev?'':'disabled')+' aria-label="Previous chapter">'+ico("prev")+'</button><button class="btn" data-read="'+(next?next.join(" "):"")+'" '+(next?'':'disabled')+' aria-label="Next chapter">'+ico("next")+'</button><button class="btn" id="setBtn" aria-label="Reading settings">'+ico("gear")+'</button></div></div>'+
+  '<div class="row"><button class="btn" data-read="'+(prev?prev.join(" "):"")+'" '+(prev?'':'disabled')+' aria-label="Previous chapter">'+ico("prev")+'</button><button class="btn" data-read="'+(next?next.join(" "):"")+'" '+(next?'':'disabled')+' aria-label="Next chapter">'+ico("next")+'</button>'+(canSpeak()?'<button class="btn" id="playBtn" aria-label="Read chapter aloud">'+ico(tts.on?"stop":"play")+'</button>':'')+'<button class="btn" id="setBtn" aria-label="Reading settings">'+ico("gear")+'</button></div></div>'+
   (c===1?introCard(b):"")+
   '<header class="chap-head"><span class="eyebrow">'+esc(b.title)+'</span><h1 class="chap-title">'+esc(b.titles[c-1])+'</h1><span class="small muted">Chapter '+c+' · '+ch.length+' verses · '+countWJ(ch)+' with words of Jesus</span></header>'+
   '<div class="text '+(set.mode==="verse"?"verses":"")+(set.red?"":" nored")+(set.nums?"":" nonum")+(set.gloss?"":" nogloss")+'" id="text">'+html+'</div>'+
   '<p class="small muted no-print" style="margin-top:6px">Tap a verse to highlight it, add a note, or copy it. Underlined words have a short explanation.</p>'+
-  '<div class="chap-foot"><button class="btn '+(isRead?"":"red")+'" id="markRead">'+ico("check")+(isRead?"Read · tap to undo":"Mark chapter as read")+'</button>'+
+  '<div class="chap-foot"><span class="row"><button class="btn '+(isRead?"":"red")+'" id="markRead">'+ico("check")+(isRead?"Read · tap to undo":"Mark chapter as read")+'</button><button class="btn" id="quizBtn">Chapter quiz'+(S.quiz["ch."+b.id+"."+c]?' · best '+S.quiz["ch."+b.id+"."+c].best+'/'+S.quiz["ch."+b.id+"."+c].of:'')+'</button></span>'+
   (next?'<button class="btn primary" data-read="'+next.join(" ")+'">Continue to '+BOOK[next[0]].name+' '+next[1]+' '+ico("next")+'</button>':'')+'</div></div>';
   $("#bookSel").onchange=e=>go("read",{b:e.target.value,c:1});
   $("#chapBtn").onclick=()=>chapterPicker(b,c);
   $("#setBtn").onclick=settingsSheet;
+  const pb=$("#playBtn"); if(pb) pb.onclick=()=>{ if(tts.on) stopTTS(); else startTTS(1); };
+  $("#quizBtn").onclick=()=>chapterQuiz(b.id,c);
   $("#markRead").onclick=()=>{ if(S.read[key]) delete S.read[key]; else S.read[key]=Date.now(); syncPlanFromRead(); save(); vRead(m); if(S.read[key]) toast("Marked "+b.name+" "+c+" as read"); };
   if(sub.v){ const v1=sub.v, v2=sub.v2||sub.v; sub.v=null; setTimeout(()=>{ const el=$('.v[data-v="'+v1+'"]',m); if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); for(let v=v1;v<=v2;v++){ const e=$('.v[data-v="'+v+'"]',m); if(e){e.classList.add("flash"); setTimeout(()=>e.classList.remove("flash"),2600);} } } },60); }
 }
@@ -871,6 +984,7 @@ function settingsSheet(){
   openSheet('<div class="sheet-head"><h2 class="h2">Reading settings</h2><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
   '<label class="toggle"><span>Words of Jesus in red</span><input type="checkbox" class="switch" id="sRed" '+(s.red?"checked":"")+'></label>'+
   '<label class="toggle"><span>Verse numbers</span><input type="checkbox" class="switch" id="sNums" '+(s.nums?"checked":"")+'></label>'+
+  (canSpeak()?'<label class="toggle"><span>Keep reading aloud into the next chapter</span><input type="checkbox" class="switch" id="sAuto" '+(s.autoNext!==false?"checked":"")+'></label>':'')+
   '<label class="toggle"><span>Word help underlines</span><input type="checkbox" class="switch" id="sGloss" '+(s.gloss?"checked":"")+'></label>'+
   '<div class="toggle"><span>Layout</span><span class="seg"><button data-mode="para" aria-pressed="'+(s.mode==="para")+'">Paragraphs</button><button data-mode="verse" aria-pressed="'+(s.mode==="verse")+'">Verse by verse</button></span></div>'+
   '<div class="toggle"><span>Text size</span><span class="seg"><button data-size="1" aria-pressed="'+(s.size===1)+'">A</button><button data-size="1.14" aria-pressed="'+(s.size===1.14)+'" style="font-size:1.1em">A</button><button data-size="1.3" aria-pressed="'+(s.size===1.3)+'" style="font-size:1.25em">A</button><button data-size="1.5" aria-pressed="'+(s.size===1.5)+'" style="font-size:1.4em">A</button></span></div>'+
@@ -878,6 +992,7 @@ function settingsSheet(){
   const upd=()=>{applySettings(); save(); if(view==="read") vRead($("#main"));};
   $("#sRed").onchange=e=>{s.red=e.target.checked;upd();};
   $("#sNums").onchange=e=>{s.nums=e.target.checked;upd();};
+  const sa=$("#sAuto"); if(sa) sa.onchange=e=>{s.autoNext=e.target.checked;upd();};
   $("#sGloss").onchange=e=>{s.gloss=e.target.checked;upd();};
   $$("[data-mode]").forEach(x=>x.onclick=()=>{s.mode=x.dataset.mode;upd();settingsSheet();});
   $$("[data-size]").forEach(x=>x.onclick=()=>{s.size=+x.dataset.size;upd();settingsSheet();});
@@ -892,13 +1007,18 @@ function applySettings(){
 function verseSheet(){
   if(!selected.size){closeLayer();return;}
   const b=S.last.b, c=S.last.c, vs=[...selected].sort((a,b)=>a-b);
+  const memRef=b+" "+c+":"+vs[0]+(vs.length>1&&isRun(vs)?"-"+vs[vs.length-1]:"");
   const first=b+"."+c+"."+vs[0], label=BOOK[b].name+" "+c+":"+(vs.length>1?vs[0]+(isRun(vs)?"–"+vs[vs.length-1]:"…"):vs[0]);
   const cur=S.hl[first]||"", note=vs.length===1?(S.notes[first]?.t||""):"";
   openSheet('<div class="sheet-head"><div><span class="eyebrow">Selected</span><div class="h2" style="font-size:1.3rem">'+nf(label)+'</div></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
   '<div class="row" style="justify-content:space-between"><div class="swatches" role="group" aria-label="Highlight colour">'+["gold","rose","sky","sage"].map(k=>'<button class="swatch" data-hl-set="'+k+'" aria-label="'+k+'" aria-pressed="'+(cur===k)+'" style="background:var(--hl-'+k+')"></button>').join("")+'<button class="swatch" data-hl-set="" aria-label="Remove highlight" style="background:var(--page);display:grid;place-items:center">'+ico("x")+'</button></div>'+
   '<button class="btn" id="copyV">'+ico("copy")+'Copy</button></div>'+
+  '<div class="row" style="margin-top:12px">'+(canSpeak()?'<button class="btn" id="listenV">'+ico("play")+'Listen from here</button>':'')+'<button class="btn" id="memV">'+ico("mem")+(S.memory[memRef]?'Practise this verse':'Memorize')+'</button><button class="btn ask-only" id="askV">'+ico("ask")+'Ask about this</button></div>'+
   (vs.length===1?'<label class="eyebrow" for="noteTxt" style="display:block;margin:16px 0 6px">Note</label><textarea id="noteTxt" placeholder="What is the Lord showing you in this verse?">'+esc(note)+'</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" id="saveNote">Save note</button></div>':'<p class="small muted">Select a single verse to add a note.</p>'),true);
   $$("[data-hl-set]").forEach(x=>x.onclick=()=>{ vs.forEach(v=>{const k=b+"."+c+"."+v; if(x.dataset.hlSet) S.hl[k]=x.dataset.hlSet; else delete S.hl[k];}); save(); selected.clear(); closeLayer(); vRead($("#main")); });
+  const lv=$("#listenV"); if(lv) lv.onclick=()=>{ const v0=vs[0]; selected.clear(); closeLayer(); startTTS(v0); };
+  $("#memV").onclick=()=>{ if(!S.memory[memRef]){ S.memory[memRef]={step:0,added:Date.now()}; save(); } selected.clear(); closeLayer(); memPractice(memRef); };
+  $("#askV").onclick=()=>{ selected.clear(); closeLayer(); askModal(memRef); };
   $("#copyV").onclick=()=>{ const txt=vs.map(v=>plain(G[b][c-1][v-1])).join(" ")+" ("+label+", KJV)"; copy(txt); };
   const sn=$("#saveNote"); if(sn) sn.onclick=()=>{ const t=$("#noteTxt").value.trim(); if(t) S.notes[first]={t,at:Date.now()}; else delete S.notes[first]; save(); selected.clear(); closeLayer(); vRead($("#main")); toast(t?"Note saved":"Note removed"); };
 }
@@ -910,14 +1030,16 @@ function vStudies(m){
   const tab=sub.tab||"studies";
   const done=Object.keys(S.studies).length;
   m.innerHTML='<div class="wide"><div class="hero"><span class="eyebrow">Studies</span><h1 class="display">What Jesus taught</h1><p class="lede">Thirteen guided studies built from the King James text, each with notes, a memory verse and questions for reflection. You have completed '+done+' of '+STUDIES.length+'.</p></div>'+
-  '<div class="tabsline" role="tablist"><button role="tab" data-stab="studies" aria-selected="'+(tab==="studies")+'">Guided studies</button><button role="tab" data-stab="harmony" aria-selected="'+(tab==="harmony")+'">Life of Christ</button></div>'+
-  (tab==="studies"?'<div class="grid">'+STUDIES.map(s=>'<button class="study-card" data-study="'+s.id+'"><span class="eyebrow">'+esc(s.sub)+'</span><h3>'+esc(s.title)+'</h3><p class="muted small" style="margin:0">'+esc(s.intro.split(". ")[0])+'.</p><span class="meta"><span>'+s.parts.length+' passages</span>'+(S.studies[s.id]?'<span class="done">✓ Completed</span>':'')+'</span></button>').join("")+'</div>':harmonyHTML())+
+  '<div class="tabsline" role="tablist"><button role="tab" data-stab="studies" aria-selected="'+(tab==="studies")+'">Guided studies</button><button role="tab" data-stab="memory" aria-selected="'+(tab==="memory")+'">Memory verses</button><button role="tab" data-stab="compare" aria-selected="'+(tab==="compare")+'">Compare Gospels</button><button role="tab" data-stab="harmony" aria-selected="'+(tab==="harmony")+'">Life of Christ</button></div>'+
+  (tab==="studies"?'<div class="grid">'+STUDIES.map(s=>'<button class="study-card" data-study="'+s.id+'"><span class="eyebrow">'+esc(s.sub)+'</span><h3>'+esc(s.title)+'</h3><p class="muted small" style="margin:0">'+esc(s.intro.split(". ")[0])+'.</p><span class="meta"><span>'+s.parts.length+' passages</span>'+(S.studies[s.id]?'<span class="done">✓ Completed</span>':'')+'</span></button>').join("")+'</div>':tab==="memory"?memoryHTML():tab==="compare"?compareHTML(sub.ev):harmonyHTML())+
   '</div>';
+  const cs=$("#cmpSel"); if(cs) cs.onchange=()=>{ sub={tab:"compare",ev:+cs.value}; vStudies(m); };
+  const cu=$("#cmpU"); if(cu) cu.onchange=()=>{ S.settings.uniq=cu.checked; save(); $(".cmp").classList.toggle("nouniq",!cu.checked); };
 }
 function harmonyHTML(){
   return '<p class="lede" style="margin-bottom:16px">Twenty-six events in the life of Jesus, in order, showing which Gospels tell each one. Tap a reference to read it; compare how the four writers tell the same moment.</p>'+
   '<div class="harm-wrap"><table class="harm"><thead><tr><th class="num">#</th><th>Event</th>'+BOOKS.map(b=>'<th>'+b.name+'</th>').join("")+'</tr></thead><tbody>'+
-  HARMONY.map((h,i)=>'<tr><td class="num">'+(i+1)+'</td><th scope="row">'+esc(h.e)+'</th>'+BOOKS.map(b=>'<td>'+(h.r[b.id]?'<button class="chip" data-open="'+h.r[b.id]+'">'+h.r[b.id].replace(/^\w+ /,"")+'</button>':'<span class="none">—</span>')+'</td>').join("")+'</tr>').join("")+
+  HARMONY.map((h,i)=>'<tr><td class="num">'+(i+1)+'</td><th scope="row">'+esc(h.e)+(Object.keys(h.r).length>1?' <button class="chip" data-cmp="'+i+'">Compare</button>':'')+'</th>'+BOOKS.map(b=>'<td>'+(h.r[b.id]?'<button class="chip" data-open="'+h.r[b.id]+'">'+h.r[b.id].replace(/^\w+ /,"")+'</button>':'<span class="none">—</span>')+'</td>').join("")+'</tr>').join("")+
   '</tbody></table></div>';
 }
 function vStudy(m,s){
@@ -931,7 +1053,9 @@ function vStudy(m,s){
     '<p class="note">'+esc(p.n)+'</p></div></section>').join("")+
   '<div class="ornament">✠</div><h2 class="h2">For reflection</h2><p class="muted small">Your answers are saved as you type and appear in your Journal.</p>'+
   '<div class="qs" style="margin-top:12px">'+s.q.map((q,i)=>'<div><label for="q_'+s.id+'_'+i+'">'+esc(q)+'</label><textarea id="q_'+s.id+'_'+i+'" data-ans="'+s.id+'.'+i+'" placeholder="Write your thoughts or a prayer…">'+esc(S.answers[s.id+"."+i]||"")+'</textarea></div>').join("")+'</div>'+
+  (QUIZ[s.id]?'<div class="ornament">✠</div><h2 class="h2">Quiz</h2><p class="muted small">'+QUIZ[s.id].length+' quick questions on this study'+(S.quiz["study."+s.id]?'. Your best score: '+S.quiz["study."+s.id].best+' of '+S.quiz["study."+s.id].of:'')+'.</p><div class="card quiz" id="studyQuiz"></div>':'')+
   '<div class="chap-foot"><button class="btn '+(S.studies[s.id]?"":"red")+'" id="doneStudy">'+ico("check")+(S.studies[s.id]?"Completed · tap to undo":"Mark study complete")+'</button>'+(nx?'<button class="btn primary" data-study="'+nx.id+'">Next: '+esc(nx.title)+' '+ico("next")+'</button>':'')+'</div></div>';
+  if($("#studyQuiz")) runQuiz($("#studyQuiz"),"study."+s.id,studyQuestions(s.id),s.title);
   $("#doneStudy").onclick=()=>{ if(S.studies[s.id]) delete S.studies[s.id]; else {S.studies[s.id]=Date.now(); toast("Study completed");} save(); vStudy(m,s); };
   let t; $$("[data-ans]",m).forEach(a=>a.oninput=()=>{ clearTimeout(t); t=setTimeout(()=>{ const v=a.value.trim(); if(v) S.answers[a.dataset.ans]=a.value; else delete S.answers[a.dataset.ans]; save(); },500); });
 }
@@ -1016,7 +1140,7 @@ function vGuide(m){
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Words in italics</h2><p class="scripture" style="font-size:1rem">The 1611 translators set in <i class="add">italics</i> any word they added to make the English read smoothly, with no exact equivalent in the Greek. For example: “Blessed <i class="add">are</i> the poor in spirit.”</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">L<span class="sc">ord</span> in small capitals</h2><p class="scripture" style="font-size:1rem">In Old Testament quotations, <span class="sc">lord</span> in small capitals stands for God\'s covenant name, YHWH, revealed to Moses at the burning bush.</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Thee, thou and ye</h2><p>“Thou” and “thee” are always singular, and “ye” and “you” are plural. When Jesus says “Simon, Simon, Satan hath desired to have <b>you</b>… but I have prayed for <b>thee</b>” (Luke 22:31-32), the difference matters: Satan wanted all the disciples, and Jesus prayed for Peter personally.</p></div>'+
-  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Using Red Letter</h2><p>Tap a verse to highlight it, write a note or copy it. Your progress, notes and reflections save automatically'+(remote?" to your account, so they follow you between your phone and computer.":". When you open the app from your Claude account they sync between devices.")+' On a phone, use your browser\'s “Add to Home Screen” to keep Red Letter one tap away.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Using Red Letter</h2><p>Tap a verse to highlight it, write a note, copy it, listen from that verse or add it to your memory verses'+(sampleFn?', or ask Claude about it':'')+'. The play button in the reader reads the chapter aloud. Each study ends with a short quiz, and every chapter has one too. Your progress, notes and reflections save automatically'+(remote?" to your account, so they follow you between your phone and computer.":". When you open the app from your Claude account they sync between devices.")+' On a phone, use your browser\'s “Add to Home Screen” to keep Red Letter one tap away.</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Printable study guide</h2><p>Every study, the Life of Christ harmony and the 89-day checklist, laid out for paper with space to write.</p><button class="btn red" data-go="booklet">Open the printable booklet</button></div>'+
   '</section><div class="ornament">✠</div><h2 class="h2">Word help</h2><p class="muted">Older English words and terms from the world of the Gospels. In the reader, these words are underlined; tap one to see its meaning.</p>'+
   '<div class="gloss" style="margin-top:10px">'+GLOSS.map(g=>'<div><b>'+esc(glossName(g))+'</b><span class="small">'+esc(g[1])+'</span></div>').join("")+'</div>'+
@@ -1051,7 +1175,7 @@ function passageModal(ref){
   const r=parseRef(ref); if(!r) return;
   openModal('<div class="sheet-head"><div><span class="eyebrow">'+(r.ot?"Old Testament":esc(BOOK[r.b].title))+'</span><h2 class="h2">'+nf(refLabel(ref))+'</h2></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
    '<div class="scripture">'+passageHTML(ref)+'</div>'+
-   '<div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn" data-copy="'+esc(ref)+'">'+ico("copy")+'Copy</button>'+(r.ot?'':'<button class="btn primary" data-goto="'+r.b+'|'+r.c1+'|'+(r.v2===null?"":r.v1)+'|'+(r.v2===null?"":(r.c2===r.c1?r.v2:""))+'">Open in reader</button>')+'</div>');
+   '<div class="row" style="margin-top:18px;justify-content:flex-end"><button class="btn" data-copy="'+esc(ref)+'">'+ico("copy")+'Copy</button>'+(r.ot?'':'<button class="btn primary" data-goto="'+r.b+'|'+r.c1+'|'+(r.v2===null?"":r.v1)+'|'+(r.v2===null?"":(r.c2===r.c1?r.v2:""))+'">Open in reader</button>')+'</div>'+'<div class="row" style="justify-content:flex-end;margin-top:8px"><button class="btn ask-only" data-ask="'+esc(ref)+'">'+ico("ask")+'Ask about this</button></div>');
 }
 function copy(text){
   const done=()=>toast("Copied");
@@ -1071,7 +1195,7 @@ function glossPop(el){
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-go],[data-read],[data-open],[data-study],[data-goto],[data-copy],[data-close],[data-plan],[data-plan-open],[data-stab],[data-jtab],[data-sq],.gl,.v");
+  const t=e.target.closest("[data-go],[data-read],[data-open],[data-study],[data-goto],[data-copy],[data-close],[data-plan],[data-plan-open],[data-stab],[data-jtab],[data-sq],[data-mem],[data-cmp],[data-ask],.gl,.v");
   if(!t) return;
   if(t.matches(".gl")&&S.settings.gloss){ e.stopPropagation(); glossPop(t); return; }
   if(t.dataset.go){ e.preventDefault(); go(t.dataset.go); return; }
@@ -1085,6 +1209,9 @@ document.addEventListener("click",e=>{
   if(t.dataset.planOpen){ openPlanDay(+t.dataset.planOpen,t.dataset.planId); return; }
   if(t.dataset.stab){ sub={tab:t.dataset.stab}; vStudies($("#main")); return; }
   if(t.dataset.jtab){ sub={tab:t.dataset.jtab}; vJournal($("#main")); return; }
+  if(t.dataset.mem){ memPractice(t.dataset.mem); return; }
+  if(t.dataset.cmp){ go("studies",{tab:"compare",ev:+t.dataset.cmp}); return; }
+  if(t.dataset.ask){ askModal(t.dataset.ask); return; }
   if(t.dataset.sq){ sq=t.dataset.sq; $("#sq").value=sq; doSearch(); return; }
   if(t.matches(".v")&&view==="read"&&t.closest("#text")){ const v=+t.dataset.v; if(selected.has(v)){selected.delete(v);t.classList.remove("sel-v");} else {selected.add(v);t.classList.add("sel-v");} verseSheet(); }
 });
@@ -1097,10 +1224,227 @@ document.addEventListener("keydown",e=>{
 });
 
 /* ---------- Boot ---------- */
+/* ---------- Seeded helpers ---------- */
+function seeded(str){ let h=2166136261; for(const ch of str){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); } return ()=>{ h^=h<<13; h^=h>>>17; h^=h<<5; return ((h>>>0)%10000)/10000; }; }
+function shuffle(arr,rnd=Math.random){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const STOP=new Set("a an and the of to in unto that this these those he she it they them him his her their ye you your thou thee thy thine i me my we us our is are was were be been am shall will hath have had not no nor for but or as so with by from at on upon into out up which who whom what when then there than also all any every one even if lo behold said saith say".split(" "));
+const words=t=>t.split(/\s+/).filter(Boolean);
+const norm=w=>w.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z']/g,"");
+
+/* ---------- Quizzes ---------- */
+function studyQuestions(id){
+  const rnd=seeded("study:"+id);
+  return (QUIZ[id]||[]).map(([q,opts,ref])=>({q, opts:shuffle(opts,rnd), a:opts[0], ref}));
+}
+function chapterQuestions(b,c){
+  const ch=G[b][c-1], rnd=seeded("ch:"+b+c), qs=[];
+  const pool=[...new Set(ch.flatMap(t=>words(plain(t)).map(norm)).filter(w=>w.length>=4&&!STOP.has(w)))];
+  const cands=shuffle(ch.map((t,i)=>({t,v:i+1})).filter(x=>{const r=(x.t.match(/\{([^}]*)\}/g)||[]).join(" "); return words(r).length>=7;}),rnd);
+  const src=cands.length>=2?cands:shuffle(ch.map((t,i)=>({t,v:i+1})).filter(x=>words(plain(x.t)).length>=8),rnd);
+  for(const x of src.slice(0,4)){
+    const ws=words(plain(x.t)), idxs=ws.map((w,i)=>i).filter(i=>{const n=norm(ws[i]); return n.length>=4&&!STOP.has(n);});
+    if(!idxs.length) continue;
+    const i=idxs[Math.floor(rnd()*idxs.length)], ans=norm(ws[i]);
+    const wrong=shuffle(pool.filter(w=>w!==ans&&Math.abs(w.length-ans.length)<=3),rnd).slice(0,3);
+    if(wrong.length<3) continue;
+    const shown=ws.map((w,k)=>k===i?w.replace(/[A-Za-z’']+/,"_____"):w).join(" ");
+    const red=x.t.includes("{");
+    qs.push({q:(red?"Jesus said: ":"Complete the verse: ")+"“"+shown+"”", opts:shuffle([ans,...wrong],rnd), a:ans, ref:b+" "+c+":"+x.v});
+  }
+  return qs.slice(0,3);
+}
+function runQuiz(box,id,qs,title){
+  let i=0, score=0;
+  const step=()=>{
+    if(i>=qs.length){
+      const best=Math.max(score,(S.quiz[id]||{}).best||0); S.quiz[id]={best,last:score,of:qs.length,at:Date.now()}; save();
+      box.innerHTML='<div class="quiz-done"><div class="h2">'+nf(score+" of "+qs.length)+'</div><p class="muted">'+(score===qs.length?"Every answer right. Well done!":score>=qs.length/2?"Good work. Read the verses again for the ones you missed.":"Read the passages again and try once more.")+'</p><button class="btn" data-quiz-again>Try again</button></div>';
+      $("[data-quiz-again]",box).onclick=()=>{i=0;score=0;step();};
+      return;
+    }
+    const q=qs[i];
+    box.innerHTML='<div class="quiz-q"><span class="eyebrow">'+esc(title)+' · Question '+(i+1)+' of '+qs.length+'</span><p class="quiz-text">'+esc(q.q)+'</p><div class="quiz-opts">'+q.opts.map((o,k)=>'<button class="quiz-opt" data-k="'+k+'">'+esc(o)+'</button>').join("")+'</div><div class="quiz-after" hidden></div></div>';
+    $$(".quiz-opt",box).forEach(btn=>btn.onclick=()=>{
+      const pick=q.opts[+btn.dataset.k], ok=pick===q.a; if(ok) score++;
+      $$(".quiz-opt",box).forEach(b2=>{ b2.disabled=true; const o=q.opts[+b2.dataset.k]; if(o===q.a) b2.classList.add("right"); else if(b2===btn) b2.classList.add("wrong"); });
+      const af=$(".quiz-after",box); af.hidden=false;
+      af.innerHTML='<p class="quiz-verdict '+(ok?"ok":"no")+'">'+(ok?"Correct.":"Not quite. The answer is “"+esc(q.a)+"”.")+'</p><blockquote class="passage scripture">'+passageHTML(q.ref)+'<div class="ref" style="margin-top:4px">'+refLabel(q.ref)+'</div></blockquote><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" data-quiz-next>'+(i+1<qs.length?"Next question":"See my score")+'</button></div>';
+      $("[data-quiz-next]",af).onclick=()=>{i++;step();};
+    });
+  };
+  step();
+}
+function chapterQuiz(b,c){
+  const qs=chapterQuestions(b,c);
+  openModal('<div class="sheet-head"><div><span class="eyebrow">Chapter quiz</span><h2 class="h2">'+BOOK[b].name+' '+nf(c)+'</h2></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div><div id="quizBox"></div>');
+  runQuiz($("#quizBox"),"ch."+b+"."+c,qs,BOOK[b].name+" "+c);
+}
+
+/* ---------- Memory verses ---------- */
+const MEM_STEPS=["Read","Fill in","First letters","Recite"];
+function memoryList(){
+  const list=STUDIES.map(s=>({ref:s.memory,from:s.title}));
+  Object.keys(S.memory).forEach(r=>{ if(!list.some(x=>x.ref===r)) list.push({ref:r,from:"Added by you"}); });
+  return list;
+}
+const memText=ref=>versesOf(ref).map(x=>plain(x.t)).join(" ");
+function memoryHTML(){
+  const list=memoryList(), mastered=list.filter(x=>S.memory[x.ref]?.mastered).length;
+  return '<p class="lede" style="margin-bottom:16px">Hide God\'s word in your heart, one verse at a time. Each verse has four steps, from reading it to saying it from memory. You have learned '+mastered+' of '+list.length+'. To add any verse, tap it in the reader and choose “Memorize”.</p>'+
+  '<div class="grid">'+list.map(x=>{const m=S.memory[x.ref]||{}; const st=m.mastered?4:(m.step||0);
+    return '<article class="card mem-card"><div class="row" style="justify-content:space-between"><span class="ref">'+refLabel(x.ref)+'</span>'+(m.mastered?'<span class="chip" style="color:var(--red)">Learned</span>':'')+'</div>'+
+    '<div class="scripture" style="font-size:1rem;line-height:1.6">'+passageHTML(x.ref,{nums:false})+'</div>'+
+    '<div class="mem-steps" aria-label="Progress">'+MEM_STEPS.map((n,k)=>'<span class="'+(k<st?"on":"")+'" title="'+n+'"></span>').join("")+'</div>'+
+    '<div class="row" style="justify-content:space-between"><span class="small muted">'+esc(x.from)+'</span><button class="btn red" data-mem="'+esc(x.ref)+'">'+(m.mastered?"Review":st?"Continue":"Start")+'</button></div></article>';}).join("")+'</div>';
+}
+function memPractice(ref,step){
+  const m=S.memory[ref]=S.memory[ref]||{step:0};
+  if(step==null) step=m.mastered?3:Math.min(m.step||0,3);
+  const text=memText(ref), ws=words(text);
+  const head='<div class="sheet-head"><div><span class="eyebrow">Memory verse · Step '+(step+1)+' of 4: '+MEM_STEPS[step]+'</span><h2 class="h2">'+nf(refLabel(ref))+'</h2></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+    '<div class="seg" style="margin-bottom:16px">'+MEM_STEPS.map((n,k)=>'<button data-mstep="'+k+'" aria-pressed="'+(k===step)+'">'+n+'</button>').join("")+'</div>';
+  const advance=()=>{ if(step+1>(m.step||0)) m.step=Math.min(step+1,4); save(); memPractice(ref,Math.min(step+1,3)); };
+  if(step===0){
+    openModal(head+'<div class="scripture mem-big">'+passageHTML(ref,{nums:false})+'</div><p class="muted small">Read it aloud slowly three times. Notice where each phrase begins.</p><div class="row" style="justify-content:flex-end">'+(canSpeak()?'<button class="btn" id="memListen">'+ico("play")+'Listen</button>':'')+'<button class="btn primary" id="memNext">I\'ve read it</button></div>');
+    const l=$("#memListen"); if(l) l.onclick=()=>speakOnce(text);
+    $("#memNext").onclick=advance;
+  } else if(step===1){
+    const rnd=seeded(ref+Date.now());
+    const blanks=ws.map((w,i)=>i).filter(i=>{const n=norm(ws[i]); return n.length>=3&&!STOP.has(n)&&rnd()<0.55;}).slice(0,10);
+    if(!blanks.length) blanks.push(0);
+    let next=0, misses=0;
+    const bank=shuffle(blanks.map(i=>ws[i].replace(/[^A-Za-z’']/g,"")),rnd);
+    const draw=()=>ws.map((w,i)=>{const k=blanks.indexOf(i); if(k<0) return esc(w); if(k<next) return '<span class="mem-filled">'+esc(w)+'</span>'; return '<span class="mem-blank'+(k===next?" cur":"")+'">'+"&nbsp;".repeat(Math.max(4,w.length))+'</span>';}).join(" ");
+    openModal(head+'<div class="scripture mem-big" id="memText">'+draw()+'</div><p class="muted small">Tap the words in order to fill each blank.</p><div class="mem-bank" id="memBank">'+bank.map((w,k)=>'<button class="chip" data-w="'+k+'">'+esc(w)+'</button>').join("")+'</div><p class="small muted" id="memMsg" aria-live="polite"></p>');
+    $$("#memBank [data-w]").forEach(b=>b.onclick=()=>{
+      const want=norm(ws[blanks[next]]);
+      if(norm(b.textContent)===want){ b.disabled=true; b.classList.add("used"); next++; $("#memText").innerHTML=draw();
+        if(next>=blanks.length){ $("#memMsg").textContent=misses?"Done, with "+misses+" slip"+(misses>1?"s":"")+".":"Perfect!"; setTimeout(advance,900); } }
+      else { misses++; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); }
+    });
+  } else if(step===2){
+    openModal(head+'<div class="scripture mem-big mem-letters">'+ws.map((w,i)=>'<button class="ml" data-i="'+i+'" data-w="'+esc(w)+'">'+esc(w.replace(/([A-Za-z])[A-Za-z’']*/,(m0,f)=>f+"_".repeat(Math.max(0,m0.length-1))))+'</button>').join(" ")+'</div><p class="muted small">Say the verse using only the first letters. Tap a word if you get stuck.</p><div class="row" style="justify-content:flex-end"><button class="btn" id="memShow">Show all</button><button class="btn primary" id="memNext">I can say it</button></div>');
+    $$(".ml").forEach(b=>b.onclick=()=>{b.textContent=b.dataset.w; b.classList.add("shown");});
+    $("#memShow").onclick=()=>$$(".ml").forEach(b=>{b.textContent=b.dataset.w; b.classList.add("shown");});
+    $("#memNext").onclick=advance;
+  } else {
+    openModal(head+'<label class="muted small" for="memType">Type the verse from memory. Spelling and punctuation don\'t need to be exact.</label><textarea id="memType" style="margin-top:8px" autocomplete="off" spellcheck="false"></textarea><div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn primary" id="memCheck">Check</button></div><div id="memResult"></div>');
+    $("#memCheck").onclick=()=>{
+      const a=ws.map(norm).filter(Boolean), bw=words($("#memType").value).map(norm).filter(Boolean);
+      const dp=Array.from({length:a.length+1},()=>new Array(bw.length+1).fill(0));
+      for(let i=a.length-1;i>=0;i--) for(let j=bw.length-1;j>=0;j--) dp[i][j]=a[i]===bw[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+      const hit=new Set(); let i=0,j=0; while(i<a.length&&j<bw.length){ if(a[i]===bw[j]){hit.add(i);i++;j++;} else if(dp[i+1][j]>=dp[i][j+1]) i++; else j++; }
+      const pct=Math.round(dp[0][0]/a.length*100), extra=bw.length-dp[0][0];
+      const okPct=pct>=90&&extra<=Math.max(2,a.length*0.1);
+      let wi=0; const shown=ws.map(w=>{ if(!norm(w)) return esc(w); const k=wi++; return hit.has(k)?esc(w):'<span class="mem-miss">'+esc(w)+'</span>'; }).join(" ");
+      if(okPct&&!m.mastered){ m.mastered=Date.now(); m.step=4; save(); }
+      $("#memResult").innerHTML='<div class="memory" style="margin-top:14px"><div class="h2" style="font-size:1.3rem">'+nf(pct+"%")+' '+(okPct?"Learned!":"Almost there")+'</div><p class="small muted" style="margin:4px 0 8px">'+(okPct?"This verse is now marked as learned. Review it now and then to keep it fresh.":"Words you missed are underlined in red. Try again, or go back a step.")+'</p><div class="scripture" style="font-size:1rem">'+shown+'</div></div>';
+      if(okPct) toast("Verse learned");
+    };
+  }
+  $$("[data-mstep]").forEach(b=>b.onclick=()=>memPractice(ref,+b.dataset.mstep));
+}
+
+/* ---------- Compare the Gospels ---------- */
+const COMMON=new Set("there their these those where which while about after again before being cometh came come going went other things thing great saying spake answered unto would could should shall might began certain therefore because".split(" "));
+function stem(w){ return w.replace(/(eth|est|ed|es|s)$/,""); }
+function compareHTML(idx){
+  const list=HARMONY.map((h,i)=>({h,i})).filter(x=>Object.keys(x.h.r).length>1);
+  if(idx==null||!HARMONY[idx]||Object.keys(HARMONY[idx].r).length<2) idx=list[0].i;
+  const h=HARMONY[idx], ids=BOOKS.map(b=>b.id).filter(id=>h.r[id]);
+  const wordSets={}; ids.forEach(id=>{ wordSets[id]=new Set(versesOf(h.r[id]).flatMap(x=>words(plain(x.t)).map(w=>stem(norm(w))))); });
+  const uniq=id=>{ const others=ids.filter(o=>o!==id); return w=>{ const s=stem(norm(w)); return (w.length>=5||/^[A-Z][a-z]{2,}/.test(w))&&!STOP.has(norm(w))&&!COMMON.has(norm(w))&&others.every(o=>!wordSets[o].has(s)); }; };
+  const cols=ids.map(id=>{
+    const isU=uniq(id), vs=versesOf(h.r[id]);
+    const html=vs.map(x=>"<sup>"+x.v+"</sup>"+fmt(x.t,{gloss:false}).replace(/(^|>)([^<]+)/g,(m0,a,txt)=>a+txt.replace(/[A-Za-z’']+/g,w=>isU(w)?'<span class="uniq">'+w+'</span>':w))).join(" ");
+    const wj=vs.filter(x=>x.t.includes("{")).length;
+    return '<article class="cmp-col"><header><span class="h2" style="font-size:1.25rem">'+BOOK[id].name+'</span><button class="chip" data-open="'+h.r[id]+'">'+h.r[id].replace(/^\w+ /,"")+'</button></header><div class="small muted">'+vs.length+' verses · '+wj+' with words of Jesus</div><div class="scripture cmp-text">'+html+'</div></article>';
+  }).join("");
+  return '<p class="lede" style="margin-bottom:14px">Read one event as each Gospel writer tells it. Words found in only one account are <span class="uniq">underlined</span>, which shows the details each writer chose to include.</p>'+
+  '<div class="row" style="margin-bottom:14px"><label class="small muted" for="cmpSel">Event</label><select class="sel" id="cmpSel">'+list.map(x=>'<option value="'+x.i+'"'+(x.i===idx?" selected":"")+'>'+esc(x.h.e)+'</option>').join("")+'</select>'+
+  '<label class="row small" style="gap:8px"><input type="checkbox" id="cmpU" '+(S.settings.uniq!==false?"checked":"")+' style="accent-color:var(--red);width:18px;height:18px"> Mark unique words</label></div>'+
+  '<div class="cmp '+(S.settings.uniq===false?"nouniq":"")+'" style="--n:'+ids.length+'">'+cols+'</div>';
+}
+
+/* ---------- Read aloud ---------- */
+const canSpeak=()=>"speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined";
+let tts={on:false,b:null,c:null,v:1,u:null};
+function pickVoice(){ try{ const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)); return vs.find(v=>/natural|google|samantha|daniel|aria|jenny|guy/i.test(v.name))||vs[0]||null; }catch(e){ return null; } }
+function speakOnce(text){ if(!canSpeak()) return; stopTTS(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; const v=pickVoice(); if(v) u.voice=v; u.rate=S.settings.rate||0.95; tts.u=u; speechSynthesis.speak(u); }
+function startTTS(v){ if(!canSpeak()) return; speechSynthesis.cancel(); tts={on:true,b:S.last.b,c:S.last.c,v:v||1,u:null}; speakVerse(); renderPlayer(); }
+function speakVerse(){
+  if(!tts.on) return;
+  const ch=G[tts.b][tts.c-1];
+  if(tts.v>ch.length){
+    const bi=BOOKS.findIndex(x=>x.id===tts.b);
+    const next=tts.c<G[tts.b].length?[tts.b,tts.c+1]:(BOOKS[bi+1]?[BOOKS[bi+1].id,1]:null);
+    if(next&&S.settings.autoNext!==false){ tts.on=false; go("read",{b:next[0],c:next[1]}); setTimeout(()=>startTTS(1),350); return; }
+    stopTTS(); toast("Finished "+BOOK[tts.b].name+" "+tts.c); return;
+  }
+  $$(".v.speaking").forEach(e=>e.classList.remove("speaking"));
+  const el=view==="read"&&S.last.b===tts.b&&S.last.c===tts.c?$('.v[data-v="'+tts.v+'"]'):null;
+  if(el){ el.classList.add("speaking"); const r=el.getBoundingClientRect(); if(r.top<80||r.bottom>innerHeight-140) el.scrollIntoView({block:"center",behavior:"smooth"}); }
+  const u=new SpeechSynthesisUtterance(plain(ch[tts.v-1])); u.lang="en-US"; const vc=pickVoice(); if(vc) u.voice=vc; u.rate=S.settings.rate||0.95;
+  u.onend=()=>{ if(tts.on&&tts.u===u){ tts.v++; speakVerse(); } };
+  u.onerror=e=>{ if(e.error!=="interrupted"&&e.error!=="canceled") stopTTS(); };
+  tts.u=u; speechSynthesis.speak(u); renderPlayer();
+}
+function stopTTS(){ tts.on=false; tts.u=null; try{ speechSynthesis.cancel(); }catch(e){} $$(".v.speaking").forEach(e=>e.classList.remove("speaking")); renderPlayer(); }
+function renderPlayer(){
+  let p=$("#player");
+  if(!tts.on){ if(p) p.remove(); const pb=$("#playBtn"); if(pb) pb.innerHTML=ico("play"); return; }
+  if(!p){ p=document.createElement("div"); p.id="player"; p.className="player"; document.body.appendChild(p); }
+  p.innerHTML='<span class="small"><b>Reading aloud</b> · '+BOOK[tts.b].name+' '+tts.c+':'+tts.v+'</span><span class="row" style="gap:6px"><button class="btn" id="ttsRate" aria-label="Reading speed">'+(S.settings.rate||0.95)+'×</button><button class="btn" id="ttsStop">'+ico("stop")+'Stop</button></span>';
+  $("#ttsStop").onclick=stopTTS;
+  $("#ttsRate").onclick=()=>{ const rs=[0.8,0.95,1.1,1.25]; const i=rs.indexOf(S.settings.rate||0.95); S.settings.rate=rs[(i+1)%rs.length]; save(); const v=tts.v; startTTS(v); };
+  const pb=$("#playBtn"); if(pb) pb.innerHTML=ico("stop");
+}
+if(canSpeak()){ try{ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged=()=>{}; }catch(e){} }
+
+/* ---------- Ask about a passage (Claude version only) ---------- */
+let sampleFn=null;
+async function connectAsk(){ const C=window.claude; if(!C||!C.use) return; try{ sampleFn=await C.use("sample"); }catch(e){ sampleFn=null; } if(sampleFn){ document.documentElement.classList.add("can-ask"); } }
+function md(text){
+  const lines=esc(text).replace(/\*\*([^*]+)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*([^*\n]+)\*/g,"$1<i>$2</i>").split(/\n/);
+  let out="", inList=false;
+  for(const l of lines){ const m=l.match(/^\s*(?:[-•]|\d+\.)\s+(.*)/);
+    if(m){ if(!inList){out+="<ul>";inList=true;} out+="<li>"+m[1]+"</li>"; continue; }
+    if(inList){out+="</ul>";inList=false;}
+    if(/^#{1,4}\s/.test(l)) out+="<p><b>"+l.replace(/^#+\s*/,"")+"</b></p>"; else if(l.trim()) out+="<p>"+l+"</p>"; }
+  if(inList) out+="</ul>"; return out;
+}
+let askCtl=null;
+function askModal(ref){
+  if(!sampleFn) return;
+  const text=versesOf(ref).map(x=>(versesOf(ref).length>1?x.v+" ":"")+plain(x.t)).join(" ");
+  const presets=["Explain this in plain words","What was happening here?","How can I live this out this week?","Where else does the Bible speak to this?"];
+  openModal('<div class="sheet-head"><div><span class="eyebrow">Ask about this passage</span><h2 class="h2">'+nf(refLabel(ref))+'</h2></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+    '<blockquote class="passage scripture" style="font-size:1rem;line-height:1.6">'+passageHTML(ref)+'</blockquote>'+
+    '<div class="row" style="margin:14px 0">'+presets.map(p=>'<button class="chip" data-askp="'+esc(p)+'">'+esc(p)+'</button>').join("")+'</div>'+
+    '<label class="small muted" for="askQ">Or ask your own question</label><textarea id="askQ" style="min-height:70px;margin-top:6px" placeholder="What does Jesus mean by…"></textarea>'+
+    '<div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" id="askStop" hidden>Stop</button><button class="btn primary" id="askGo">Ask</button></div>'+
+    '<div id="askOut" class="ask-out" aria-live="polite"></div><p class="small muted" style="margin-top:10px">Answers come from Claude. Weigh them against Scripture, as the Bereans did (Acts 17:11).</p>');
+  const go2=async q=>{
+    q=(q||"").trim(); if(!q) { $("#askQ").focus(); return; }
+    askCtl?.abort(); askCtl=new AbortController();
+    const out=$("#askOut"), stop=$("#askStop"), btn=$("#askGo");
+    out.innerHTML='<p class="muted">Thinking…</p>'; stop.hidden=false; btn.disabled=true;
+    const prompt="You are helping a Christian reader study the words of Jesus in the four Gospels, King James Version. Answer the reader's question about the passage below. Be faithful to Scripture, warm and clear, in plain modern English, around 150 to 250 words unless the question truly needs more. When you cite Scripture, quote the King James Version and give the reference. Where Christians hold different interpretations, say so briefly and fairly. Do not invent historical details; say plainly when something is uncertain. Use short paragraphs or a short bulleted list; no headings.\n\nPassage ("+refLabel(ref)+", KJV):\n"+text+"\n\nReader's question: "+q;
+    try{ await sampleFn(prompt,{signal:askCtl.signal,onText:({text})=>{ out.innerHTML=md(text); }}); }
+    catch(e){ if(e&&e.text) out.innerHTML=md(e.text); else out.innerHTML="";
+      if(!e||e.code!=="cancelled") out.insertAdjacentHTML("beforeend",'<p class="small" style="color:var(--red)">'+(e&&e.code==="not_granted"?"Asking Claude was not allowed for this page. You can allow it from the page's permissions.":e&&e.code==="rate_limited"?"Too many questions at once. Wait a moment, then ask again.":"The answer could not be finished. Try asking again.")+'</p>'); }
+    finally{ stop.hidden=true; btn.disabled=false; }
+  };
+  $$("[data-askp]").forEach(b=>b.onclick=()=>{ $("#askQ").value=b.dataset.askp; go2(b.dataset.askp); });
+  $("#askGo").onclick=()=>go2($("#askQ").value);
+  $("#askStop").onclick=()=>askCtl?.abort();
+}
+
 applySettings();
 const h=location.hash.slice(1); if(ROUTES.includes(h)) view=h;
 render();
 connect();
+connectAsk();
 })();
 </script>
 <script>if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});</script></body></html>
