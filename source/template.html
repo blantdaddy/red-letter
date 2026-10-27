@@ -348,7 +348,7 @@ mark{background:var(--hl-gold);color:inherit;border-radius:3px;padding:0 1px}
       <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true"><rect x="3" y="5" width="34" height="30" rx="3" fill="var(--lapis)"/><rect x="18.5" y="9" width="3" height="20" fill="var(--page)"/><rect x="13" y="14" width="14" height="3" fill="var(--page)"/><path d="M3 33h34v2a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="var(--red)"/></svg>
       <span><b>Red Letter</b></span>
     </a>
-    <button class="icon-btn" data-go="guide" aria-label="Guide and word help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg></button>
+    <span class="row" style="gap:2px"><button class="icon-btn" data-settings aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button><button class="icon-btn" data-go="guide" aria-label="Guide and word help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg></button></span>
   </header>
   <main class="main" id="main" tabindex="-1"></main>
   <nav class="tabs" id="tabs" aria-label="Main"></nav>
@@ -477,7 +477,7 @@ const ROUTES=VIEWS.map(x=>x[0]).concat("booklet");
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1); if(h&&h!==view&&ROUTES.includes(h)){view=h;sub={};render();}});
 function navHTML(list){return list.map(([k,l])=>'<button data-go="'+k+'"'+(k===view?' aria-current="page"':'')+'>'+ico(k)+'<span>'+l+'</span></button>').join("");}
 function render(){
-  $("#nav").innerHTML=navHTML(VIEWS);
+  $("#nav").innerHTML=navHTML(VIEWS)+'<button data-settings>'+ico("gear")+'<span>Settings</span></button>';
   $("#tabs").innerHTML=navHTML(VIEWS.slice(0,6));
   const m=$("#main");
   ({today:vToday,read:vRead,studies:vStudies,plans:vPlans,search:vSearch,journal:vJournal,guide:vGuide,booklet:vBooklet}[view]||vToday)(m);
@@ -511,7 +511,7 @@ function vToday(m){
   '<div class="ornament">✠</div>'+
   (()=>{ const ml=memoryList(), cur=ml.find(x=>!S.memory[x.ref]?.mastered); const done=ml.length-ml.filter(x=>!S.memory[x.ref]?.mastered).length;
     return '<section class="card stack" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><span class="eyebrow">Memory verse</span><span class="small muted">'+done+' of '+ml.length+' learned</span></div>'+
-    (cur?'<div class="scripture" style="font-size:1.05rem;line-height:1.6">'+passageHTML(cur.ref,{nums:false})+'</div><div class="row" style="justify-content:space-between"><span class="ref">'+refLabel(cur.ref)+'</span><button class="btn red" data-mem="'+esc(cur.ref)+'">'+ico("mem")+'Practise</button></div>':'<p>You have learned every memory verse. Add more from the reader.</p>')+'</section>'; })()+
+    (cur?'<div class="scripture" style="font-size:1.05rem;line-height:1.6">'+passageHTML(cur.ref,{nums:false})+'</div><div class="row" style="justify-content:space-between"><span class="ref">'+refLabel(cur.ref)+'</span><button class="btn red" data-mem="'+esc(cur.ref)+'">'+ico("mem")+'Practice</button></div>':'<p>You have learned every memory verse. Add more from the reader.</p>')+'</section>'; })()+
   '<section class="stack"><span class="eyebrow">Study for today</span>'+
   '<button class="study-card" data-study="'+st.id+'"><span class="eyebrow">'+esc(st.sub)+'</span><h3>'+esc(st.title)+'</h3><p class="muted small" style="margin:0">'+esc(st.intro.slice(0,170))+'…</p><span class="meta"><span>'+st.parts.length+' passages · '+st.q.length+' questions</span>'+(S.studies[st.id]?'<span class="done">Completed</span>':'<span>Begin →</span>')+'</span></button></section>'+
   '<div class="ornament">✠</div>'+
@@ -540,7 +540,7 @@ function vRead(m){
   m.innerHTML='<div class="wrap">'+
   '<div class="reader-bar"><div class="picker"><select class="sel" id="bookSel" aria-label="Book">'+BOOKS.map(x=>'<option value="'+x.id+'"'+(x===b?' selected':'')+'>'+x.name+'</option>').join("")+'</select>'+
   '<button class="sel" id="chapBtn" aria-label="Choose chapter">Chapter '+c+' ▾</button></div>'+
-  '<div class="row"><button class="btn" data-read="'+(prev?prev.join(" "):"")+'" '+(prev?'':'disabled')+' aria-label="Previous chapter">'+ico("prev")+'</button><button class="btn" data-read="'+(next?next.join(" "):"")+'" '+(next?'':'disabled')+' aria-label="Next chapter">'+ico("next")+'</button>'+(canSpeak()?'<button class="btn" id="playBtn" aria-label="Read chapter aloud">'+ico(tts.on?"stop":"play")+'</button>':'')+'<button class="btn" id="setBtn" aria-label="Reading settings">'+ico("gear")+'</button></div></div>'+
+  '<div class="row"><button class="btn" data-read="'+(prev?prev.join(" "):"")+'" '+(prev?'':'disabled')+' aria-label="Previous chapter">'+ico("prev")+'</button><button class="btn" data-read="'+(next?next.join(" "):"")+'" '+(next?'':'disabled')+' aria-label="Next chapter">'+ico("next")+'</button>'+(canSpeak()?'<button class="btn" id="playBtn" aria-label="Read chapter aloud">'+ico(tts.on?"stop":"play")+'</button>':'')+'<button class="btn" id="setBtn">'+ico("gear")+'Settings</button></div></div>'+
   (c===1?introCard(b):"")+
   '<header class="chap-head"><span class="eyebrow">'+esc(b.title)+'</span><h1 class="chap-title">'+esc(b.titles[c-1])+'</h1><span class="small muted">Chapter '+c+' · '+ch.length+' verses · '+countWJ(ch)+' with words of Jesus</span></header>'+
   '<div class="text '+(set.mode==="verse"?"verses":"")+(set.red?"":" nored")+(set.nums?"":" nonum")+(set.gloss?"":" nogloss")+'" id="text">'+html+'</div>'+
@@ -570,7 +570,7 @@ function chapterPicker(b,c){
 }
 function settingsSheet(){
   const s=S.settings;
-  openSheet('<div class="sheet-head"><h2 class="h2">Reading settings</h2><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
+  openSheet('<div class="sheet-head"><h2 class="h2">Settings</h2><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
   '<label class="toggle"><span>Words of Jesus in red</span><input type="checkbox" class="switch" id="sRed" '+(s.red?"checked":"")+'></label>'+
   '<label class="toggle"><span>Verse numbers</span><input type="checkbox" class="switch" id="sNums" '+(s.nums?"checked":"")+'></label>'+
   (canSpeak()?'<div class="toggle"><label for="sVoice">Reading voice</label><span class="row" style="gap:6px;flex-wrap:nowrap;min-width:0"><select class="sel" id="sVoice" style="max-width:190px;min-width:0"><option value="">Automatic</option>'+voiceList().map(v=>'<option value="'+esc(v.name)+'"'+(v.name===s.voice?" selected":"")+'>'+esc(v.name.replace(/^(Microsoft|Google)\s+/,"").replace(/\s+Online \(Natural\)/," (Natural)"))+' · '+esc(v.lang)+'</option>').join("")+'</select><button class="btn" id="sVoiceTry" aria-label="Preview voice">'+ico("play")+'</button></span></div>':'')+
@@ -579,7 +579,7 @@ function settingsSheet(){
   '<div class="toggle"><span>Layout</span><span class="seg"><button data-mode="para" aria-pressed="'+(s.mode==="para")+'">Paragraphs</button><button data-mode="verse" aria-pressed="'+(s.mode==="verse")+'">Verse by verse</button></span></div>'+
   '<div class="toggle"><span>Text size</span><span class="seg"><button data-size="1" aria-pressed="'+(s.size===1)+'">A</button><button data-size="1.14" aria-pressed="'+(s.size===1.14)+'" style="font-size:1.1em">A</button><button data-size="1.3" aria-pressed="'+(s.size===1.3)+'" style="font-size:1.25em">A</button><button data-size="1.5" aria-pressed="'+(s.size===1.5)+'" style="font-size:1.4em">A</button></span></div>'+
   '<div class="toggle"><span>Appearance</span><span class="seg"><button data-theme-set="" aria-pressed="'+(!s.theme)+'">Auto</button><button data-theme-set="light" aria-pressed="'+(s.theme==="light")+'">Light</button><button data-theme-set="dark" aria-pressed="'+(s.theme==="dark")+'">Dark</button></span></div>');
-  const upd=()=>{applySettings(); save(); if(view==="read") vRead($("#main"));};
+  const upd=()=>{applySettings(); save(); render();};
   $("#sRed").onchange=e=>{s.red=e.target.checked;upd();};
   $("#sNums").onchange=e=>{s.nums=e.target.checked;upd();};
   const sv=$("#sVoice"); if(sv){ sv.onchange=()=>{ s.voice=sv.value; save(); speakOnce("Blessed are the pure in heart: for they shall see God."); }; $("#sVoiceTry").onclick=()=>speakOnce("Blessed are the pure in heart: for they shall see God."); if(!voiceList().length){ try{ speechSynthesis.onvoiceschanged=()=>{ if($("#sVoice")&&$("#sVoice").options.length<2) settingsSheet(); }; }catch(e){} } }
@@ -602,9 +602,9 @@ function verseSheet(){
   const first=b+"."+c+"."+vs[0], label=BOOK[b].name+" "+c+":"+(vs.length>1?vs[0]+(isRun(vs)?"–"+vs[vs.length-1]:"…"):vs[0]);
   const cur=S.hl[first]||"", note=vs.length===1?(S.notes[first]?.t||""):"";
   openSheet('<div class="sheet-head"><div><span class="eyebrow">Selected</span><div class="h2" style="font-size:1.3rem">'+nf(label)+'</div></div><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
-  '<div class="row" style="justify-content:space-between"><div class="swatches" role="group" aria-label="Highlight colour">'+["gold","rose","sky","sage"].map(k=>'<button class="swatch" data-hl-set="'+k+'" aria-label="'+k+'" aria-pressed="'+(cur===k)+'" style="background:var(--hl-'+k+')"></button>').join("")+'<button class="swatch" data-hl-set="" aria-label="Remove highlight" style="background:var(--page);display:grid;place-items:center">'+ico("x")+'</button></div>'+
+  '<div class="row" style="justify-content:space-between"><div class="swatches" role="group" aria-label="Highlight color">'+["gold","rose","sky","sage"].map(k=>'<button class="swatch" data-hl-set="'+k+'" aria-label="'+k+'" aria-pressed="'+(cur===k)+'" style="background:var(--hl-'+k+')"></button>').join("")+'<button class="swatch" data-hl-set="" aria-label="Remove highlight" style="background:var(--page);display:grid;place-items:center">'+ico("x")+'</button></div>'+
   '<button class="btn" id="copyV">'+ico("copy")+'Copy</button></div>'+
-  '<div class="row" style="margin-top:12px">'+(canSpeak()?'<button class="btn" id="listenV">'+ico("play")+'Listen from here</button>':'')+'<button class="btn" id="memV">'+ico("mem")+(S.memory[memRef]?'Practise this verse':'Memorize')+'</button><button class="btn ask-only" id="askV">'+ico("ask")+'Ask about this</button></div>'+
+  '<div class="row" style="margin-top:12px">'+(canSpeak()?'<button class="btn" id="listenV">'+ico("play")+'Listen from here</button>':'')+'<button class="btn" id="memV">'+ico("mem")+(S.memory[memRef]?'Practice this verse':'Memorize')+'</button><button class="btn ask-only" id="askV">'+ico("ask")+'Ask about this</button></div>'+
   (vs.length===1?'<label class="eyebrow" for="noteTxt" style="display:block;margin:16px 0 6px">Note</label><textarea id="noteTxt" placeholder="What is the Lord showing you in this verse?">'+esc(note)+'</textarea><div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" id="saveNote">Save note</button></div>':'<p class="small muted">Select a single verse to add a note.</p>'),true);
   $$("[data-hl-set]").forEach(x=>x.onclick=()=>{ vs.forEach(v=>{const k=b+"."+c+"."+v; if(x.dataset.hlSet) S.hl[k]=x.dataset.hlSet; else delete S.hl[k];}); save(); selected.clear(); closeLayer(); vRead($("#main")); });
   const lv=$("#listenV"); if(lv) lv.onclick=()=>{ const v0=vs[0]; selected.clear(); closeLayer(); startTTS(v0); };
@@ -712,8 +712,8 @@ function vJournal(m){
   const vt=k=>{const [b,c,v]=k.split("."); return G[b][+c-1][+v-1];};
   const kl=k=>{const [b,c,v]=k.split("."); return BOOK[b].name+" "+c+":"+v;};
   let body="";
-  if(tab==="notes") body=notes.length?notes.map(([k,n])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button> <span class="small muted">'+new Date(n.at).toLocaleDateString()+'</span><div class="scripture" style="margin-top:8px">'+fmt(vt(k),{gloss:false})+'</div><div class="jnote">'+esc(n.t)+'</div></div>').join(""):'<div class="empty">No notes yet. In the reader, tap any verse and choose “Note” to write what God is showing you.</div>';
-  if(tab==="hl") body=hls.length?hls.map(([k,c])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button><div class="scripture" style="margin-top:8px"><span class="v" data-hl="'+c+'">'+fmt(vt(k),{gloss:false})+'</span></div></div>').join(""):'<div class="empty">No highlights yet. Tap a verse in the reader and pick a colour.</div>';
+  if(tab==="notes") body=notes.length?notes.map(([k,n])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button> <span class="small muted">'+new Date(n.at).toLocaleDateString()+'</span><div class="scripture" style="margin-top:8px">'+fmt(vt(k),{gloss:false})+'</div><div class="jnote">'+esc(n.t)+'</div></div>').join(""):'<div class="empty">No notes yet. In the reader, tap any verse and write a note about what God is showing you.</div>';
+  if(tab==="hl") body=hls.length?hls.map(([k,c])=>'<div class="jitem"><button class="chip" data-goto="'+k.replace(/\./g,"|")+'">'+kl(k)+'</button><div class="scripture" style="margin-top:8px"><span class="v" data-hl="'+c+'">'+fmt(vt(k),{gloss:false})+'</span></div></div>').join(""):'<div class="empty">No highlights yet. Tap a verse in the reader and pick a color.</div>';
   if(tab==="ref") body=ans.length?STUDIES.filter(s=>s.q.some((_,i)=>S.answers[s.id+"."+i])).map(s=>'<div class="jitem"><button class="chip" data-study="'+s.id+'">'+esc(s.title)+'</button>'+s.q.map((q,i)=>S.answers[s.id+"."+i]?'<p style="margin:12px 0 0;font-family:var(--f-text)">'+esc(q)+'</p><div class="jnote">'+esc(S.answers[s.id+"."+i])+'</div>':'').join("")+'</div>').join(""):'<div class="empty">Your answers to study questions will gather here.</div>';
   m.innerHTML='<div class="wrap"><div class="hero"><span class="eyebrow">Journal</span><h1 class="display">What I am learning</h1><p class="lede">'+pl(notes.length,"note")+' · '+pl(hls.length,"highlighted verse")+' · '+pl(ans.length,"reflection")+'</p></div>'+
   '<div class="tabsline" role="tablist"><button role="tab" data-jtab="notes" aria-selected="'+(tab==="notes")+'">Notes</button><button role="tab" data-jtab="hl" aria-selected="'+(tab==="hl")+'">Highlights</button><button role="tab" data-jtab="ref" aria-selected="'+(tab==="ref")+'">Reflections</button></div>'+body+'</div>';
@@ -731,7 +731,7 @@ function vGuide(m){
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Words in italics</h2><p class="scripture" style="font-size:1rem">The 1611 translators set in <i class="add">italics</i> any word they added to make the English read smoothly, with no exact equivalent in the Greek. For example: “Blessed <i class="add">are</i> the poor in spirit.”</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">L<span class="sc">ord</span> in small capitals</h2><p class="scripture" style="font-size:1rem">In Old Testament quotations, <span class="sc">lord</span> in small capitals stands for God\'s covenant name, YHWH, revealed to Moses at the burning bush.</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Thee, thou and ye</h2><p>“Thou” and “thee” are always singular, and “ye” and “you” are plural. When Jesus says “Simon, Simon, Satan hath desired to have <b>you</b>… but I have prayed for <b>thee</b>” (Luke 22:31-32), the difference matters: Satan wanted all the disciples, and Jesus prayed for Peter personally.</p></div>'+
-  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Using Red Letter</h2><p>Tap a verse to highlight it, write a note, copy it, listen from that verse or add it to your memory verses'+(sampleFn?', or ask Claude about it':'')+'. The play button in the reader reads the chapter aloud. Each study ends with a short quiz, and every chapter has one too. Your progress, notes and reflections save automatically'+(remote?" to your account, so they follow you between your phone and computer.":". When you open the app from your Claude account they sync between devices.")+' On a phone, use your browser\'s “Add to Home Screen” to keep Red Letter one tap away.</p></div>'+
+  '<div class="card"><h2 class="h2" style="font-size:1.3rem">Using Red Letter</h2><p>Tap a verse to highlight it, write a note, copy it, listen from that verse or add it to your memory verses'+(sampleFn?', or ask Claude about it':'')+'. The play button in the reader reads the chapter aloud. Each study ends with a short quiz, and every chapter has one too. Your progress, notes and reflections save automatically'+(remote?" to your account, so they follow you between your phone and computer.":" on this device.")+' On a phone, use your browser\'s “Add to Home Screen” to keep Red Letter one tap away.</p></div>'+
   '<div class="card"><h2 class="h2" style="font-size:1.3rem">Printable study guide</h2><p>Every study, the Life of Christ harmony and the 89-day checklist, laid out for paper with space to write.</p><button class="btn red" data-go="booklet">Open the printable booklet</button></div>'+
   '</section><div class="ornament">✠</div><h2 class="h2">Word help</h2><p class="muted">Older English words and terms from the world of the Gospels. In the reader, these words are underlined; tap one to see its meaning.</p>'+
   '<div class="gloss" style="margin-top:10px">'+GLOSS.map(g=>'<div><b>'+esc(glossName(g))+'</b><span class="small">'+esc(g[1])+'</span></div>').join("")+'</div>'+
@@ -744,7 +744,7 @@ function glossName(g){ const w=g[0].split("|")[0].replace(/s\?$/,"").replace(/\[
 function vBooklet(m){
   const lines=n=>'<div class="lines">'+'<i></i>'.repeat(n)+'</div>';
   m.innerHTML='<div class="wrap booklet">'+
-  '<div class="no-print row" style="margin-bottom:18px"><button class="btn" data-go="guide">'+ico("prev")+'Back</button><span class="small muted">Use your browser\'s Print command on this page, or open the PDF copy saved in your project files.</span></div>'+
+  '<div class="no-print row" style="margin-bottom:18px"><button class="btn" data-go="guide">'+ico("prev")+'Back</button><span class="small muted">To print this booklet or save it as a PDF, use your browser\'s Print command on this page.</span></div>'+
   '<section class="cover"><span class="eyebrow">A study guide to the four Gospels · King James Version</span><h1 class="display" style="font-size:3.4rem">Red Letter</h1><p class="lede">Thirteen studies in the words and works of Jesus Christ, with the Life of Christ in the four Gospels and a chapter-by-chapter reading checklist.</p>'+
   '<blockquote class="passage scripture" style="margin-top:28px">'+passageHTML("John 20:31",{nums:false})+'<div class="ref" style="margin-top:6px">John 20:31</div></blockquote></section>'+
   '<section class="pb"><h2 class="h2">The four Gospels</h2>'+BOOKS.map(b=>'<div class="bk"><span class="eyebrow">'+esc(b.symbol)+'</span><h3 class="h2" style="font-size:1.4rem">'+esc(b.title)+'</h3><p style="margin:4px 0;font-family:var(--f-text)"><b>'+esc(b.portrait)+'.</b> '+esc(b.emphasis)+'</p><p class="small muted" style="margin:0">Key verse, '+refLabel(b.key)+': <span class="scripture" style="font-size:.95rem">'+passageHTML(b.key,{nums:false})+'</span></p></div>').join("")+'</section>'+
@@ -786,7 +786,7 @@ function glossPop(el){
 
 /* ---------- Events ---------- */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-go],[data-read],[data-open],[data-study],[data-goto],[data-copy],[data-close],[data-plan],[data-plan-open],[data-stab],[data-jtab],[data-sq],[data-mem],[data-cmp],[data-ask],.gl,.v");
+  const t=e.target.closest("[data-go],[data-read],[data-open],[data-study],[data-goto],[data-copy],[data-close],[data-plan],[data-plan-open],[data-stab],[data-jtab],[data-sq],[data-mem],[data-cmp],[data-ask],[data-settings],.gl,.v");
   if(!t) return;
   if(t.matches(".gl")&&S.settings.gloss){ e.stopPropagation(); glossPop(t); return; }
   if(t.dataset.go){ e.preventDefault(); go(t.dataset.go); return; }
@@ -800,6 +800,7 @@ document.addEventListener("click",e=>{
   if(t.dataset.planOpen){ openPlanDay(+t.dataset.planOpen,t.dataset.planId); return; }
   if(t.dataset.stab){ sub={tab:t.dataset.stab}; vStudies($("#main")); return; }
   if(t.dataset.jtab){ sub={tab:t.dataset.jtab}; vJournal($("#main")); return; }
+  if(t.hasAttribute("data-settings")){ settingsSheet(); return; }
   if(t.dataset.mem){ memPractice(t.dataset.mem); return; }
   if(t.dataset.cmp){ go("studies",{tab:"compare",ev:+t.dataset.cmp}); return; }
   if(t.dataset.ask){ askModal(t.dataset.ask); return; }
@@ -881,7 +882,7 @@ function memoryList(){
 const memText=ref=>versesOf(ref).map(x=>plain(x.t)).join(" ");
 function memoryHTML(){
   const list=memoryList(), mastered=list.filter(x=>S.memory[x.ref]?.mastered).length;
-  return '<p class="lede" style="margin-bottom:16px">Hide God\'s word in your heart, one verse at a time. Each verse has four steps, from reading it to saying it from memory. You have learned '+mastered+' of '+list.length+'. To add any verse, tap it in the reader and choose “Memorize”.</p>'+
+  return '<p class="lede" style="margin-bottom:16px">Hide God\'s word in your heart, one verse at a time. Each verse has four steps, from reading it to saying it from memory. You have learned '+mastered+' of '+list.length+'. To add any verse, tap it in the reader and choose “Memorize.”</p>'+
   '<div class="grid">'+list.map(x=>{const m=S.memory[x.ref]||{}; const st=m.mastered?4:(m.step||0);
     return '<article class="card mem-card"><div class="row" style="justify-content:space-between"><span class="ref">'+refLabel(x.ref)+'</span>'+(m.mastered?'<span class="chip" style="color:var(--red)">Learned</span>':'')+'</div>'+
     '<div class="scripture" style="font-size:1rem;line-height:1.6">'+passageHTML(x.ref,{nums:false})+'</div>'+
