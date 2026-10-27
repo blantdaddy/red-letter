@@ -984,6 +984,7 @@ function settingsSheet(){
   openSheet('<div class="sheet-head"><h2 class="h2">Reading settings</h2><button class="btn" data-close aria-label="Close">'+ico("x")+'</button></div>'+
   '<label class="toggle"><span>Words of Jesus in red</span><input type="checkbox" class="switch" id="sRed" '+(s.red?"checked":"")+'></label>'+
   '<label class="toggle"><span>Verse numbers</span><input type="checkbox" class="switch" id="sNums" '+(s.nums?"checked":"")+'></label>'+
+  (canSpeak()?'<div class="toggle"><label for="sVoice">Reading voice</label><span class="row" style="gap:6px;flex-wrap:nowrap;min-width:0"><select class="sel" id="sVoice" style="max-width:190px;min-width:0"><option value="">Automatic</option>'+voiceList().map(v=>'<option value="'+esc(v.name)+'"'+(v.name===s.voice?" selected":"")+'>'+esc(v.name.replace(/^(Microsoft|Google)\s+/,"").replace(/\s+Online \(Natural\)/," (Natural)"))+' · '+esc(v.lang)+'</option>').join("")+'</select><button class="btn" id="sVoiceTry" aria-label="Preview voice">'+ico("play")+'</button></span></div>':'')+
   (canSpeak()?'<label class="toggle"><span>Keep reading aloud into the next chapter</span><input type="checkbox" class="switch" id="sAuto" '+(s.autoNext!==false?"checked":"")+'></label>':'')+
   '<label class="toggle"><span>Word help underlines</span><input type="checkbox" class="switch" id="sGloss" '+(s.gloss?"checked":"")+'></label>'+
   '<div class="toggle"><span>Layout</span><span class="seg"><button data-mode="para" aria-pressed="'+(s.mode==="para")+'">Paragraphs</button><button data-mode="verse" aria-pressed="'+(s.mode==="verse")+'">Verse by verse</button></span></div>'+
@@ -992,6 +993,7 @@ function settingsSheet(){
   const upd=()=>{applySettings(); save(); if(view==="read") vRead($("#main"));};
   $("#sRed").onchange=e=>{s.red=e.target.checked;upd();};
   $("#sNums").onchange=e=>{s.nums=e.target.checked;upd();};
+  const sv=$("#sVoice"); if(sv){ sv.onchange=()=>{ s.voice=sv.value; save(); speakOnce("Blessed are the pure in heart: for they shall see God."); }; $("#sVoiceTry").onclick=()=>speakOnce("Blessed are the pure in heart: for they shall see God."); if(!voiceList().length){ try{ speechSynthesis.onvoiceschanged=()=>{ if($("#sVoice")&&$("#sVoice").options.length<2) settingsSheet(); }; }catch(e){} } }
   const sa=$("#sAuto"); if(sa) sa.onchange=e=>{s.autoNext=e.target.checked;upd();};
   $("#sGloss").onchange=e=>{s.gloss=e.target.checked;upd();};
   $$("[data-mode]").forEach(x=>x.onclick=()=>{s.mode=x.dataset.mode;upd();settingsSheet();});
@@ -1369,8 +1371,9 @@ function compareHTML(idx){
 /* ---------- Read aloud ---------- */
 const canSpeak=()=>"speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined";
 let tts={on:false,b:null,c:null,v:1,u:null};
-function pickVoice(){ try{ const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)); return vs.find(v=>/natural|google|samantha|daniel|aria|jenny|guy/i.test(v.name))||vs[0]||null; }catch(e){ return null; } }
-function speakOnce(text){ if(!canSpeak()) return; stopTTS(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; const v=pickVoice(); if(v) u.voice=v; u.rate=S.settings.rate||0.95; tts.u=u; speechSynthesis.speak(u); }
+function voiceList(){ try{ return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)); }catch(e){ return []; } }
+function pickVoice(){ try{ const vs=voiceList(); const saved=S.settings.voice&&vs.find(v=>v.name===S.settings.voice); if(saved) return saved; return vs.find(v=>/natural|google|samantha|daniel|aria|jenny|guy/i.test(v.name))||vs[0]||null; }catch(e){ return null; } }
+function speakOnce(text){ if(!canSpeak()) return; stopTTS(); const u=new SpeechSynthesisUtterance(text); u.lang="en-US"; const v=pickVoice(); if(v) try{u.voice=v;}catch(e){} u.rate=S.settings.rate||0.95; tts.u=u; speechSynthesis.speak(u); }
 function startTTS(v){ if(!canSpeak()) return; speechSynthesis.cancel(); tts={on:true,b:S.last.b,c:S.last.c,v:v||1,u:null}; speakVerse(); renderPlayer(); }
 function speakVerse(){
   if(!tts.on) return;
@@ -1384,7 +1387,7 @@ function speakVerse(){
   $$(".v.speaking").forEach(e=>e.classList.remove("speaking"));
   const el=view==="read"&&S.last.b===tts.b&&S.last.c===tts.c?$('.v[data-v="'+tts.v+'"]'):null;
   if(el){ el.classList.add("speaking"); const r=el.getBoundingClientRect(); if(r.top<80||r.bottom>innerHeight-140) el.scrollIntoView({block:"center",behavior:"smooth"}); }
-  const u=new SpeechSynthesisUtterance(plain(ch[tts.v-1])); u.lang="en-US"; const vc=pickVoice(); if(vc) u.voice=vc; u.rate=S.settings.rate||0.95;
+  const u=new SpeechSynthesisUtterance(plain(ch[tts.v-1])); u.lang="en-US"; const vc=pickVoice(); if(vc) try{u.voice=vc;}catch(e){} u.rate=S.settings.rate||0.95;
   u.onend=()=>{ if(tts.on&&tts.u===u){ tts.v++; speakVerse(); } };
   u.onerror=e=>{ if(e.error!=="interrupted"&&e.error!=="canceled") stopTTS(); };
   tts.u=u; speechSynthesis.speak(u); renderPlayer();
